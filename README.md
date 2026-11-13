@@ -91,7 +91,7 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 
 ## Robust by design
 
-- If the room sensor is unavailable, SteadyRoom uses the fallback sensor; without either it will not start heating or cooling and says so. Switching off (mode Off, open door, end of schedule) always goes out, sensor or not. With **Maximum sensor age** set, a sensor that has not reported for that long counts as unavailable too.
+- If the room sensor is unavailable, SteadyRoom uses the fallback sensor; without either it will not start heating or cooling and says so. Switching off (mode Off, open door, end of schedule) always goes out, sensor or not. With **Sensor · maximum age** set, a sensor that has not reported for that long counts as unavailable too.
 - When the unit comes back after a connection loss, SteadyRoom sends nothing for 30 s, then re-sends mode and setpoint. Cloud-connected units otherwise keep running on a command they missed. A return from unavailable never counts as the end of a run, so it does not start the Auto lock.
 - A command the unit rejects is tried again after 30 s. `sent_setpoint` only shows setpoints the unit accepted.
 - Nothing is sent before Home Assistant has finished starting.
@@ -101,20 +101,22 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 
 ## Settings
 
-All values are number entities on the SteadyRoom device page and take effect immediately.
+All values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group.
 
-| Setting | Default |
-|---|---|
-| Heat start / stop | 0.2 K / 0.2 K |
-| Cool start / stop | 0.2 K / 0.2 K |
-| Auto start / stop | 0.5 K / 0.2 K |
-| Minimum offset | 0.5 K |
-| Knee of the offset curve | 0.5 K |
-| Growth factor above the knee | 0.5 |
-| Lock of the opposite direction (Auto) | 15 min |
-| Lowest / highest setpoint sent to the unit | 16 °C / 30 °C |
-| Door open delay / close delay | 60 s / 15 s |
-| Maximum sensor age (0 = no limit) | 0 min |
+| Group | Setting | Default |
+|---|---|---|
+| Heat | start below / stop above target | 0.2 K / 0.2 K |
+| Cool | start above / stop below target | 0.2 K / 0.2 K |
+| Auto | start distance / stop distance | 0.5 K / 0.2 K |
+| Auto | opposite direction lock | 15 min |
+| Door | open delay / close delay | 60 s / 15 s |
+| Offset | minimum | 0.5 K |
+| Offset | knee ⚙️ | 0.5 K |
+| Offset | growth factor above the knee ⚙️ | 0.5 |
+| Unit | lowest / highest setpoint sent to the unit ⚙️ | 16 °C / 30 °C |
+| Sensor | maximum age, 0 = no limit ⚙️ | 0 min |
+
+⚙️ Fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
 
 To change the unit, sensors, contacts or schedule later, use **Configure** on the integration.
 

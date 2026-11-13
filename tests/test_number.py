@@ -157,3 +157,29 @@ async def test_number_rejects_lowest_above_highest_setpoint(hass: HomeAssistant)
     with pytest.raises(ServiceValidationError):
         await _set(hass, number_entity_id(hass, entry, "min_setpoint"), 31.0)
     assert hass.states.get(number_entity_id(hass, entry, "min_setpoint")).state == "16.0"  # type: ignore[union-attr]
+
+
+
+async def test_number_fine_tuning_is_disabled_by_default(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog
+) -> None:
+    """The device page shows the everyday settings; fine tuning folds into "+N disabled entities".
+
+    Disabled values keep their defaults, so control is unchanged (live check 13.11.2026: heat/24.5).
+    """
+    set_unit(hass, "off", current=23.0, setpoint=20.0)
+    set_room(hass, 19.98)
+    entry = await setup_entry(hass, enable_fine_tuning=False)
+
+    registry = er.async_get(hass)
+    disabled = {
+        key
+        for key in EXPECTED_DEFAULTS
+        if registry.async_get(number_entity_id(hass, entry, key)).disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    }
+    assert disabled == {"knee", "factor", "min_setpoint", "max_setpoint", "sensor_max_age"}
+    assert all(hass.states.get(number_entity_id(hass, entry, key)) is None for key in disabled)
+
+    await settle(hass, freezer, calls)
+    await call_entity(hass, "set_temperature", temperature=21.0, hvac_mode="heat")
+    assert calls.to_unit() == [("set_hvac_mode", {"hvac_mode": "heat"}), ("set_temperature", {"temperature": 24.5})]

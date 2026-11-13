@@ -22,6 +22,7 @@ from custom_components.steadyroom.const import (
     CONF_ROOM_SENSOR,
     CONF_UNDERLYING,
     DOMAIN,
+    NUMBER_SPECS,
 )
 
 UNIT = "climate.unit"
@@ -148,8 +149,12 @@ def set_room(hass: HomeAssistant, value: float | str, entity_id: str = ROOM) -> 
     hass.states.async_set(entity_id, str(value), {"device_class": "temperature", "unit_of_measurement": "°C"})
 
 
-async def setup_entry(hass: HomeAssistant, **options: Any) -> MockConfigEntry:
-    """Create and set up a SteadyRoom entry over the simulated unit."""
+async def setup_entry(hass: HomeAssistant, *, enable_fine_tuning: bool = True, **options: Any) -> MockConfigEntry:
+    """Create and set up a SteadyRoom entry over the simulated unit.
+
+    Fine-tuning values are disabled by default in a real install; most tests drive
+    them, so they are enabled here unless the test checks the real default.
+    """
     entry = MockConfigEntry(
         domain=DOMAIN,
         title=TITLE,
@@ -165,6 +170,13 @@ async def setup_entry(hass: HomeAssistant, **options: Any) -> MockConfigEntry:
         | options,
     )
     entry.add_to_hass(hass)
+    if enable_fine_tuning:
+        registry = er.async_get(hass)
+        for spec in NUMBER_SPECS:
+            if spec.advanced:
+                registry.async_get_or_create(
+                    "number", DOMAIN, f"{entry.entry_id}_{spec.key}", config_entry=entry, suggested_object_id=f"wohnzimmer_{spec.key}"
+                )
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     return entry

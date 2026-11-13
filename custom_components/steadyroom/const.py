@@ -80,6 +80,8 @@ class NumberSpec:
     minimum: float
     maximum: float
     step: float
+    # Fine tuning: disabled by default, so the device page folds it into "+N disabled entities".
+    advanced: bool = False
 
 
 NUMBER_SPECS: Final[tuple[NumberSpec, ...]] = (
@@ -90,14 +92,14 @@ NUMBER_SPECS: Final[tuple[NumberSpec, ...]] = (
     NumberSpec(key="auto_start", unit=NumberUnit.KELVIN, minimum=0.0, maximum=5.0, step=0.05),
     NumberSpec(key="auto_stop", unit=NumberUnit.KELVIN, minimum=0.0, maximum=5.0, step=0.05),
     NumberSpec(key="min_offset", unit=NumberUnit.KELVIN, minimum=0.0, maximum=10.0, step=0.1),
-    NumberSpec(key="knee", unit=NumberUnit.KELVIN, minimum=0.0, maximum=10.0, step=0.1),
-    NumberSpec(key="factor", unit=NumberUnit.NONE, minimum=0.0, maximum=10.0, step=0.05),
+    NumberSpec(key="knee", unit=NumberUnit.KELVIN, minimum=0.0, maximum=10.0, step=0.1, advanced=True),
+    NumberSpec(key="factor", unit=NumberUnit.NONE, minimum=0.0, maximum=10.0, step=0.05, advanced=True),
     NumberSpec(key="lock_minutes", unit=NumberUnit.MINUTES, minimum=0.0, maximum=240.0, step=1.0),
-    NumberSpec(key="min_setpoint", unit=NumberUnit.TEMPERATURE, minimum=MIN_TARGET, maximum=MAX_TARGET, step=0.5),
-    NumberSpec(key="max_setpoint", unit=NumberUnit.TEMPERATURE, minimum=MIN_TARGET, maximum=MAX_TARGET, step=0.5),
+    NumberSpec(key="min_setpoint", unit=NumberUnit.TEMPERATURE, minimum=MIN_TARGET, maximum=MAX_TARGET, step=0.5, advanced=True),
+    NumberSpec(key="max_setpoint", unit=NumberUnit.TEMPERATURE, minimum=MIN_TARGET, maximum=MAX_TARGET, step=0.5, advanced=True),
     NumberSpec(key=KEY_DOOR_OPEN_DELAY, unit=NumberUnit.SECONDS, minimum=0.0, maximum=3600.0, step=1.0),
     NumberSpec(key=KEY_DOOR_CLOSE_DELAY, unit=NumberUnit.SECONDS, minimum=0.0, maximum=3600.0, step=1.0),
-    NumberSpec(key=KEY_SENSOR_MAX_AGE, unit=NumberUnit.MINUTES, minimum=0.0, maximum=1440.0, step=1.0),
+    NumberSpec(key=KEY_SENSOR_MAX_AGE, unit=NumberUnit.MINUTES, minimum=0.0, maximum=1440.0, step=1.0, advanced=True),
 )
 
 # Tuning values that are not logic parameters; 0 as sensor age means "no limit".

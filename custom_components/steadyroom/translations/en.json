@@ -133,49 +133,49 @@
     },
     "number": {
       "heat_start": {
-        "name": "Heat start below target"
+        "name": "Heat · start below target"
       },
       "heat_stop": {
-        "name": "Heat stop above target"
+        "name": "Heat · stop above target"
       },
       "cool_start": {
-        "name": "Cool start above target"
+        "name": "Cool · start above target"
       },
       "cool_stop": {
-        "name": "Cool stop below target"
+        "name": "Cool · stop below target"
       },
       "auto_start": {
-        "name": "Auto start distance"
+        "name": "Auto · start distance"
       },
       "auto_stop": {
-        "name": "Auto stop distance"
+        "name": "Auto · stop distance"
       },
       "min_offset": {
-        "name": "Minimum offset"
+        "name": "Offset · minimum"
       },
       "knee": {
-        "name": "Offset knee"
+        "name": "Offset · knee"
       },
       "factor": {
-        "name": "Offset factor"
+        "name": "Offset · growth factor"
       },
       "lock_minutes": {
-        "name": "Opposite direction lock"
+        "name": "Auto · opposite direction lock"
       },
       "min_setpoint": {
-        "name": "Lowest setpoint at the unit"
+        "name": "Unit · lowest setpoint"
       },
       "max_setpoint": {
-        "name": "Highest setpoint at the unit"
+        "name": "Unit · highest setpoint"
       },
       "door_open_delay": {
-        "name": "Door open delay"
+        "name": "Door · open delay"
       },
       "door_close_delay": {
-        "name": "Door close delay"
+        "name": "Door · close delay"
       },
       "sensor_max_age": {
-        "name": "Maximum sensor age"
+        "name": "Sensor · maximum age"
       }
     },
     "switch": {

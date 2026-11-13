@@ -44,3 +44,18 @@ def test_translation_names_every_number_and_reason() -> None:
     assert set(reasons) == {reason.value for reason in Reason}
     assert _load("translations/de.json")["entity"]["switch"]["observe_only"]["name"] == "Nur beobachten"
     assert strings["entity"]["switch"]["observe_only"]["name"] == "Observe only"
+
+
+@pytest.mark.parametrize("name", ["strings.json", "translations/de.json"])
+def test_translation_number_names_carry_a_group(name: str) -> None:
+    """Every tuning value is named "Group · detail", so the device page sorts them into groups."""
+    names = {key: value["name"] for key, value in _load(name)["entity"]["number"].items()}
+    assert all(" · " in label for label in names.values()), names
+    groups = {key: label.split(" · ")[0] for key, label in names.items()}
+    english = {key: value["name"].split(" · ")[0] for key, value in _load("strings.json")["entity"]["number"].items()}
+    # German groups the same keys together as English does.
+    assert _partition(groups) == _partition(english)
+
+
+def _partition(groups: dict[str, str]) -> list[list[str]]:
+    return sorted(sorted(key for key, group in groups.items() if group == wanted) for wanted in set(groups.values()))

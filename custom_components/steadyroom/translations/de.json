@@ -133,49 +133,49 @@
     },
     "number": {
       "heat_start": {
-        "name": "Heizen startet unter Soll"
+        "name": "Heizen · startet unter Soll"
       },
       "heat_stop": {
-        "name": "Heizen endet über Soll"
+        "name": "Heizen · endet über Soll"
       },
       "cool_start": {
-        "name": "Kühlen startet über Soll"
+        "name": "Kühlen · startet über Soll"
       },
       "cool_stop": {
-        "name": "Kühlen endet unter Soll"
+        "name": "Kühlen · endet unter Soll"
       },
       "auto_start": {
-        "name": "Auto-Startabstand"
+        "name": "Auto · Startabstand"
       },
       "auto_stop": {
-        "name": "Auto-Endabstand"
+        "name": "Auto · Endabstand"
       },
       "min_offset": {
-        "name": "Mindest-Offset"
+        "name": "Offset · Mindestwert"
       },
       "knee": {
-        "name": "Knickpunkt des Offsets"
+        "name": "Offset · Knickpunkt"
       },
       "factor": {
-        "name": "Faktor des Offsets"
+        "name": "Offset · Wachstumsfaktor"
       },
       "lock_minutes": {
-        "name": "Sperrzeit der Gegenrichtung"
+        "name": "Auto · Sperrzeit der Gegenrichtung"
       },
       "min_setpoint": {
-        "name": "Kleinster Sollwert an der Anlage"
+        "name": "Anlage · kleinster Sollwert"
       },
       "max_setpoint": {
-        "name": "Größter Sollwert an der Anlage"
+        "name": "Anlage · größter Sollwert"
       },
       "door_open_delay": {
-        "name": "Tür-offen-Verzögerung"
+        "name": "Tür · Verzögerung beim Öffnen"
       },
       "door_close_delay": {
-        "name": "Tür-zu-Verzögerung"
+        "name": "Tür · Verzögerung beim Schließen"
       },
       "sensor_max_age": {
-        "name": "Maximales Fühleralter"
+        "name": "Fühler · maximales Alter"
       }
     },
     "switch": {

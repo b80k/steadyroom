@@ -57,6 +57,7 @@ class SteadyRoomNumber(RestoreNumber):
         self._attr_native_max_value = spec.maximum
         self._attr_native_step = spec.step
         self._attr_native_unit_of_measurement = _unit(spec, temperature_unit)
+        self._attr_entity_registry_enabled_default = not spec.advanced
 
     @property
     def native_value(self) -> float:
