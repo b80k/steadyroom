@@ -51,8 +51,22 @@ Requires Home Assistant 2026.10 or newer.
 1. In Home Assistant open the **Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`.
 2. Install **SteadyRoom** and restart Home Assistant.
 3. **Settings → Devices & services → Add integration → SteadyRoom**.
-4. Select the air conditioner, the room temperature sensor and, optionally, a fallback sensor, door/window contacts and a schedule.
+4. Fill in the setup fields below: the air conditioner and the room temperature sensor are required, the rest is optional.
 5. A new device starts with **Observe only** switched on and no mode chosen: it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then turn **Observe only** off on the device page to let SteadyRoom take over.
+
+### Setup fields
+
+You fill these in when adding SteadyRoom. To change them later, open the integration and choose **Configure**.
+
+| Field | What to enter | What it does |
+|---|---|---|
+| **Name** | A name for the room, e.g. `Living room`. | Names the new thermostat device and its entities. |
+| **Air conditioner** (required) | The climate entity of your split unit or heat pump, as provided by its own integration. It must report its current temperature. | SteadyRoom sends mode and setpoint to this entity and reads the unit's own temperature from it. |
+| **Room temperature sensor** (required) | A temperature sensor in the middle of the room, at sitting height, away from the unit's airflow, sun and radiators. | Every decision is made from this value. |
+| **Fallback temperature sensor** | Optional: a second temperature sensor in the same room. | Used while the room sensor is unavailable. Without either sensor, SteadyRoom does not start the unit. |
+| **Door and window contacts** | Optional: the binary sensors of the doors and windows of this room, including open doorways to rooms the unit also serves. | While one stays open longer than **Door · open delay**, the unit switches off. |
+| **Contacts report closed as on** | Turn on only if your contacts are `on` when closed, as with many Loxone or KNX inputs. Standard door sensors are `on` when open: leave it off. | Flips how the contacts are read. |
+| **Schedule** | Optional: a Home Assistant *Schedule* helper with the times the room should be conditioned. | Outside its blocks the unit stays off. Leave empty to control around the clock. |
 
 ## How it decides
 
@@ -64,11 +78,13 @@ Requires Home Assistant 2026.10 or newer.
 
 Between start and stop the unit keeps doing what it did (hysteresis). In **Auto**, a running unit never switches straight to the opposite direction: it switches off first, and the opposite direction stays locked for 15 minutes after a run ended. That prevents heat–cool ping-pong around the target.
 
+The chart shows, for each mode, where the unit starts and stops and what offset it receives on the way. Every threshold carries the name of the setting that moves it.
+
+![Offset sent to the unit over room temperature minus target, for Heat, Auto and Cool, with each threshold labelled by its setting](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/decision-map.png)
+
 ## The setpoint sent to the unit
 
 The setpoint is the unit's own measured temperature plus an offset (minus, when cooling). The offset depends on how far the room is from the target:
-
-![Offset over distance to target: 0.5 K near the target, growing quadratically beyond 0.5 K, in 0.5 K steps](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/offset.png)
 
 - up to 0.5 K away: 0.5 K,
 - beyond that it grows quadratically: g = d + 0.5 · (d − 0.5)², rounded up to the unit's step (usually 0.5 K).
@@ -101,22 +117,55 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 
 ## Settings
 
-All values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group.
+All values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group. The defaults work for most split units; change one value at a time and watch a day before the next.
 
-| Group | Setting | Default |
-|---|---|---|
-| Heat | start below / stop above target | 0.2 K / 0.2 K |
-| Cool | start above / stop below target | 0.2 K / 0.2 K |
-| Auto | start distance / stop distance | 0.5 K / 0.2 K |
-| Auto | opposite direction lock | 15 min |
-| Door | open delay / close delay | 60 s / 15 s |
-| Offset | minimum | 0.5 K |
-| Offset | knee ⚙️ | 0.5 K |
-| Offset | growth factor above the knee ⚙️ | 0.5 |
-| Unit | lowest / highest setpoint sent to the unit ⚙️ | 16 °C / 30 °C |
-| Sensor | maximum age, 0 = no limit ⚙️ | 0 min |
+⚙️ marks fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
 
-⚙️ Fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
+### Heat and Cool
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Heat · start below target** | 0–5 K | 0.2 K | Heating starts once the room is this far below the target. |
+| **Heat · stop above target** | 0–5 K | 0.2 K | Heating stops once the room is this far above the target. |
+| **Cool · start above target** | 0–5 K | 0.2 K | Cooling starts once the room is this far above the target. |
+| **Cool · stop below target** | 0–5 K | 0.2 K | Cooling stops once the room is this far below the target. |
+
+Start and stop together form the band around the target in which the unit keeps doing what it does. A wider band means fewer starts and a room that swings a little more; a narrower band holds the target tighter with more starts.
+
+### Auto
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Auto · start distance** | 0–5 K | 0.5 K | A stopped unit starts heating this far below the target, or cooling this far above it. |
+| **Auto · stop distance** | 0–5 K | 0.2 K | A running unit stops this far past the target: heating above it, cooling below it. |
+| **Auto · opposite direction lock** | 0–240 min | 15 min | After a run ends, the opposite direction may not start for this long. 0 switches the lock off. |
+
+Keep the start distance larger than the stop distance. Otherwise the point where heating stops already lies beyond the point where cooling starts, and only the lock keeps the unit from switching back and forth.
+
+### Doors
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Door · open delay** | 0–3600 s | 60 s | How long a door or window must stay open before the unit switches off. A quick step outside does not stop it; 0 switches off at once. |
+| **Door · close delay** | 0–3600 s | 15 s | How long all doors and windows must be closed before the unit resumes the direction it had. |
+
+These only matter if you selected contacts during setup.
+
+### Offset
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Offset · minimum** | 0–10 K | 0.5 K | The smallest offset added to the unit's own reading while it runs. If the unit still throttles down or switches itself off just before the room reaches the target, raise it; if the room overshoots, lower it. |
+| **Offset · knee** ⚙️ | 0–10 K | 0.5 K | Up to this distance from the target, the offset equals the distance, rounded up to the unit's step and never below the minimum. Beyond it, the offset grows faster than the distance. |
+| **Offset · growth factor** ⚙️ | 0–10 | 0.5 | How much faster it grows beyond the knee: offset = d + factor · (d − knee)². Raise it to catch up faster from far behind, for example after a cold night; 0 makes the offset follow the distance. |
+
+### Unit and sensor
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Unit · lowest setpoint** ⚙️ | 7–35 °C | 16 °C | SteadyRoom never sends a lower setpoint. Set it to the lowest value your unit accepts. |
+| **Unit · highest setpoint** ⚙️ | 7–35 °C | 30 °C | SteadyRoom never sends a higher setpoint. Set it to the highest value your unit accepts. The lowest may not be above the highest; SteadyRoom rejects such a value. |
+| **Sensor · maximum age** ⚙️ | 0–1440 min | 0 min | A room sensor that has not reported for this long counts as unavailable. Use it only for sensors that report at a fixed interval, and choose well above that interval, e.g. 30 min for a sensor reporting every 5 min. Many battery sensors only report when the value changes: leave 0 (no limit) there. |
 
 To change the unit, sensors, contacts or schedule later, use **Configure** on the integration.
 
