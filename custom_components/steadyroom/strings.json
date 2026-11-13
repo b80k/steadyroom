@@ -1,0 +1,192 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add SteadyRoom",
+        "description": "SteadyRoom controls an air conditioner from a room temperature sensor, so the unit runs steadily instead of short cycling.",
+        "data": {
+          "name": "Name",
+          "underlying": "Air conditioner",
+          "room_sensor": "Room temperature sensor",
+          "fallback_sensor": "Fallback temperature sensor",
+          "contacts": "Door and window contacts",
+          "contacts_inverted": "Contacts report closed as on",
+          "schedule": "Schedule"
+        },
+        "data_description": {
+          "name": "Name of the new thermostat device.",
+          "underlying": "The real climate entity SteadyRoom sends mode and setpoint to.",
+          "room_sensor": "Temperature in the middle of the room; SteadyRoom decides from this value.",
+          "fallback_sensor": "Used while the room sensor is unavailable.",
+          "contacts": "The unit switches off while one of them stays open.",
+          "contacts_inverted": "Turn on if your contacts are on when closed (for example Loxone inputs).",
+          "schedule": "The unit only runs while this schedule is on. Leave empty to run all the time."
+        }
+      }
+    },
+    "error": {
+      "underlying_is_steadyroom": "Choose the real air conditioner, not a SteadyRoom thermostat.",
+      "underlying_in_use": "Another SteadyRoom device already controls this air conditioner.",
+      "fallback_is_room_sensor": "The fallback sensor must differ from the room sensor."
+    },
+    "abort": {
+      "already_configured": "This air conditioner is already controlled by SteadyRoom."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SteadyRoom entities",
+        "description": "Change which entities this thermostat works with. Tuning values are on the device page.",
+        "data": {
+          "name": "Name",
+          "underlying": "Air conditioner",
+          "room_sensor": "Room temperature sensor",
+          "fallback_sensor": "Fallback temperature sensor",
+          "contacts": "Door and window contacts",
+          "contacts_inverted": "Contacts report closed as on",
+          "schedule": "Schedule"
+        },
+        "data_description": {
+          "name": "Name of the thermostat device.",
+          "underlying": "The real climate entity SteadyRoom sends mode and setpoint to.",
+          "room_sensor": "Temperature in the middle of the room; SteadyRoom decides from this value.",
+          "fallback_sensor": "Used while the room sensor is unavailable.",
+          "contacts": "The unit switches off while one of them stays open.",
+          "contacts_inverted": "Turn on if your contacts are on when closed (for example Loxone inputs).",
+          "schedule": "The unit only runs while this schedule is on. Leave empty to run all the time."
+        }
+      }
+    },
+    "error": {
+      "underlying_is_steadyroom": "Choose the real air conditioner, not a SteadyRoom thermostat.",
+      "underlying_in_use": "Another SteadyRoom device already controls this air conditioner.",
+      "fallback_is_room_sensor": "The fallback sensor must differ from the room sensor."
+    }
+  },
+  "entity": {
+    "climate": {
+      "steadyroom": {
+        "state_attributes": {
+          "distance": {
+            "name": "Distance to target"
+          },
+          "offset": {
+            "name": "Offset"
+          },
+          "sent_setpoint": {
+            "name": "Setpoint sent to the unit"
+          },
+          "would_hvac_mode": {
+            "name": "Mode SteadyRoom wants",
+            "state": {
+              "off": "Off",
+              "heat": "Heat",
+              "cool": "Cool"
+            }
+          },
+          "would_setpoint": {
+            "name": "Setpoint SteadyRoom wants"
+          },
+          "last_direction": {
+            "name": "Last direction",
+            "state": {
+              "off": "Off",
+              "heat": "Heat",
+              "cool": "Cool"
+            }
+          },
+          "run_ended_at": {
+            "name": "Last run ended"
+          },
+          "locked_direction": {
+            "name": "Locked direction",
+            "state": {
+              "off": "None",
+              "heat": "Heat",
+              "cool": "Cool"
+            }
+          },
+          "lock_until": {
+            "name": "Locked until"
+          },
+          "reason": {
+            "name": "Reason",
+            "state": {
+              "not_configured": "Not configured: choose a mode",
+              "off_mode": "Mode is off",
+              "in_band": "Room within band",
+              "heating": "Heating",
+              "cooling": "Cooling",
+              "door_open": "Door or window open",
+              "outside_schedule": "Outside schedule",
+              "locked": "Opposite direction locked",
+              "sensor_missing": "Room temperature missing",
+              "unit_unavailable": "Air conditioner unavailable"
+            }
+          },
+          "observe_only": {
+            "name": "Observe only"
+          }
+        }
+      }
+    },
+    "number": {
+      "heat_start": {
+        "name": "Heat start below target"
+      },
+      "heat_stop": {
+        "name": "Heat stop above target"
+      },
+      "cool_start": {
+        "name": "Cool start above target"
+      },
+      "cool_stop": {
+        "name": "Cool stop below target"
+      },
+      "auto_start": {
+        "name": "Auto start distance"
+      },
+      "auto_stop": {
+        "name": "Auto stop distance"
+      },
+      "min_offset": {
+        "name": "Minimum offset"
+      },
+      "knee": {
+        "name": "Offset knee"
+      },
+      "factor": {
+        "name": "Offset factor"
+      },
+      "lock_minutes": {
+        "name": "Opposite direction lock"
+      },
+      "min_setpoint": {
+        "name": "Lowest setpoint at the unit"
+      },
+      "max_setpoint": {
+        "name": "Highest setpoint at the unit"
+      },
+      "door_open_delay": {
+        "name": "Door open delay"
+      },
+      "door_close_delay": {
+        "name": "Door close delay"
+      },
+      "sensor_max_age": {
+        "name": "Maximum sensor age"
+      }
+    },
+    "switch": {
+      "observe_only": {
+        "name": "Observe only"
+      }
+    }
+  },
+  "exceptions": {
+    "setpoint_range": {
+      "message": "The lowest setpoint ({low}) must not be above the highest setpoint ({high})."
+    }
+  }
+}

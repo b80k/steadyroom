@@ -1,0 +1,192 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SteadyRoom hinzufügen",
+        "description": "SteadyRoom steuert eine Klimaanlage nach einem Raumtemperatur-Fühler, damit sie gleichmäßig durchläuft, statt zu takten.",
+        "data": {
+          "name": "Name",
+          "underlying": "Klimaanlage",
+          "room_sensor": "Raumtemperatur-Fühler",
+          "fallback_sensor": "Ersatzfühler",
+          "contacts": "Tür- und Fensterkontakte",
+          "contacts_inverted": "Kontakte melden geschlossen als an",
+          "schedule": "Zeitplan"
+        },
+        "data_description": {
+          "name": "Name des neuen Thermostat-Geräts.",
+          "underlying": "Die echte Klima-Entität, an die SteadyRoom Modus und Sollwert sendet.",
+          "room_sensor": "Temperatur in der Raummitte; nach diesem Wert entscheidet SteadyRoom.",
+          "fallback_sensor": "Wird genutzt, solange der Raumfühler nicht verfügbar ist.",
+          "contacts": "Die Anlage schaltet ab, solange einer davon offen steht.",
+          "contacts_inverted": "Einschalten, wenn die Kontakte im geschlossenen Zustand an sind (zum Beispiel Loxone-Eingänge).",
+          "schedule": "Die Anlage läuft nur, solange dieser Zeitplan an ist. Leer lassen, um immer zu regeln."
+        }
+      }
+    },
+    "error": {
+      "underlying_is_steadyroom": "Bitte die echte Klimaanlage wählen, nicht ein SteadyRoom-Thermostat.",
+      "underlying_in_use": "Ein anderes SteadyRoom-Gerät steuert diese Klimaanlage bereits.",
+      "fallback_is_room_sensor": "Der Ersatzfühler muss sich vom Raumfühler unterscheiden."
+    },
+    "abort": {
+      "already_configured": "Diese Klimaanlage wird bereits von SteadyRoom gesteuert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SteadyRoom-Entitäten",
+        "description": "Ändern, mit welchen Entitäten dieses Thermostat arbeitet. Die Stellschrauben stehen auf der Geräteseite.",
+        "data": {
+          "name": "Name",
+          "underlying": "Klimaanlage",
+          "room_sensor": "Raumtemperatur-Fühler",
+          "fallback_sensor": "Ersatzfühler",
+          "contacts": "Tür- und Fensterkontakte",
+          "contacts_inverted": "Kontakte melden geschlossen als an",
+          "schedule": "Zeitplan"
+        },
+        "data_description": {
+          "name": "Name des Thermostat-Geräts.",
+          "underlying": "Die echte Klima-Entität, an die SteadyRoom Modus und Sollwert sendet.",
+          "room_sensor": "Temperatur in der Raummitte; nach diesem Wert entscheidet SteadyRoom.",
+          "fallback_sensor": "Wird genutzt, solange der Raumfühler nicht verfügbar ist.",
+          "contacts": "Die Anlage schaltet ab, solange einer davon offen steht.",
+          "contacts_inverted": "Einschalten, wenn die Kontakte im geschlossenen Zustand an sind (zum Beispiel Loxone-Eingänge).",
+          "schedule": "Die Anlage läuft nur, solange dieser Zeitplan an ist. Leer lassen, um immer zu regeln."
+        }
+      }
+    },
+    "error": {
+      "underlying_is_steadyroom": "Bitte die echte Klimaanlage wählen, nicht ein SteadyRoom-Thermostat.",
+      "underlying_in_use": "Ein anderes SteadyRoom-Gerät steuert diese Klimaanlage bereits.",
+      "fallback_is_room_sensor": "Der Ersatzfühler muss sich vom Raumfühler unterscheiden."
+    }
+  },
+  "entity": {
+    "climate": {
+      "steadyroom": {
+        "state_attributes": {
+          "distance": {
+            "name": "Abstand zum Soll"
+          },
+          "offset": {
+            "name": "Offset"
+          },
+          "sent_setpoint": {
+            "name": "Sollwert an der Anlage"
+          },
+          "would_hvac_mode": {
+            "name": "Gewünschter Modus",
+            "state": {
+              "off": "Aus",
+              "heat": "Heizen",
+              "cool": "Kühlen"
+            }
+          },
+          "would_setpoint": {
+            "name": "Gewünschter Sollwert"
+          },
+          "last_direction": {
+            "name": "Letzte Richtung",
+            "state": {
+              "off": "Aus",
+              "heat": "Heizen",
+              "cool": "Kühlen"
+            }
+          },
+          "run_ended_at": {
+            "name": "Letzter Lauf beendet"
+          },
+          "locked_direction": {
+            "name": "Gesperrte Richtung",
+            "state": {
+              "off": "Keine",
+              "heat": "Heizen",
+              "cool": "Kühlen"
+            }
+          },
+          "lock_until": {
+            "name": "Gesperrt bis"
+          },
+          "reason": {
+            "name": "Grund",
+            "state": {
+              "not_configured": "Nicht eingerichtet: Modus wählen",
+              "off_mode": "Modus aus",
+              "in_band": "Raum im Band",
+              "heating": "Heizt",
+              "cooling": "Kühlt",
+              "door_open": "Tür oder Fenster offen",
+              "outside_schedule": "Außerhalb des Zeitplans",
+              "locked": "Gegenrichtung gesperrt",
+              "sensor_missing": "Raumtemperatur fehlt",
+              "unit_unavailable": "Klimaanlage nicht verfügbar"
+            }
+          },
+          "observe_only": {
+            "name": "Nur beobachten"
+          }
+        }
+      }
+    },
+    "number": {
+      "heat_start": {
+        "name": "Heizen startet unter Soll"
+      },
+      "heat_stop": {
+        "name": "Heizen endet über Soll"
+      },
+      "cool_start": {
+        "name": "Kühlen startet über Soll"
+      },
+      "cool_stop": {
+        "name": "Kühlen endet unter Soll"
+      },
+      "auto_start": {
+        "name": "Auto-Startabstand"
+      },
+      "auto_stop": {
+        "name": "Auto-Endabstand"
+      },
+      "min_offset": {
+        "name": "Mindest-Offset"
+      },
+      "knee": {
+        "name": "Knickpunkt des Offsets"
+      },
+      "factor": {
+        "name": "Faktor des Offsets"
+      },
+      "lock_minutes": {
+        "name": "Sperrzeit der Gegenrichtung"
+      },
+      "min_setpoint": {
+        "name": "Kleinster Sollwert an der Anlage"
+      },
+      "max_setpoint": {
+        "name": "Größter Sollwert an der Anlage"
+      },
+      "door_open_delay": {
+        "name": "Tür-offen-Verzögerung"
+      },
+      "door_close_delay": {
+        "name": "Tür-zu-Verzögerung"
+      },
+      "sensor_max_age": {
+        "name": "Maximales Fühleralter"
+      }
+    },
+    "switch": {
+      "observe_only": {
+        "name": "Nur beobachten"
+      }
+    }
+  },
+  "exceptions": {
+    "setpoint_range": {
+      "message": "Der kleinste Sollwert ({low}) darf nicht über dem größten Sollwert ({high}) liegen."
+    }
+  }
+}

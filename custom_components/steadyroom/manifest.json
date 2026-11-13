@@ -1,0 +1,14 @@
+{
+  "domain": "steadyroom",
+  "name": "SteadyRoom",
+  "after_dependencies": ["schedule"],
+  "codeowners": ["@b80k"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/b80k/steadyroom",
+  "integration_type": "device",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/b80k/steadyroom/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
