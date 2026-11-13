@@ -1,16 +1,58 @@
 # SteadyRoom
 
-Stops short cycling of air conditioners whose built-in sensor sits in the wrong place.
+![SteadyRoom: steady comfort from air conditioners that measure in the wrong place](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/hero.png)
+
+[![Release](https://img.shields.io/github/v/release/b80k/steadyroom?color=E5488A)](https://github.com/b80k/steadyroom/releases)
+[![Home Assistant 2026.10+](https://img.shields.io/badge/Home%20Assistant-2026.10%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
+[![Validate](https://github.com/b80k/steadyroom/actions/workflows/validate.yml/badge.svg)](https://github.com/b80k/steadyroom/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3B82F6)](LICENSE)
+
+**Your heat pump switches on, off, on, off, and the sofa never gets warm? SteadyRoom fixes that.** It stops short cycling of air conditioners whose built-in sensor sits in the wrong place, and turns them into a calm, precise room thermostat.
+
+- 🎯 **Measures where you live**: decides from a sensor in the middle of the room, not from the unit's housing.
+- 🌊 **Runs gently instead of cycling**: one steady run to the target instead of a stop-and-go every few minutes.
+- 🧩 **One entity, no automation spaghetti**: works with the standard Thermostat and Tile cards, all settings on the device page.
+- 🛡️ **Safe to try**: every new device starts in *Observe only* and touches nothing until you let it.
+
+## The problem
+
+![A wall unit reads 25.4 °C in its own warm air while the middle of the room is still at 20.4 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/problem.png)
 
 Most split units measure the temperature at their own housing, high up on the wall, right in the warm air they blow out. When heating, they believe the room has reached the target long before its centre has, throttle down, switch off, start again a few minutes later. The room swings, the compressor cycles, and nobody is comfortable.
 
+## The fix
+
+![Room sensor to SteadyRoom to your unit](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/how-it-works.png)
+
 SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool or off from a sensor in the middle of the room, and it gives the unit a setpoint relative to the unit's *own* reading. The unit therefore always sees a clear, steady demand and keeps running gently until the room itself is where you want it.
+
+![Schematic: on its own the unit starts five times in two hours and the room stays below target; with SteadyRoom it starts once and holds the target band](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/before-after.png)
+
+*Schematic illustration of the effect, not a measurement.*
 
 ## What you get
 
 One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed and vane position pass through to your unit. All tuning values live as settings on the device page.
 
+| Thermostat card | Device page |
+|---|---|
+| ![SteadyRoom on the standard Thermostat card: heating, target 21.0 °C, room 20.4 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/thermostat-card.png) | ![SteadyRoom device page with its settings](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/device-settings.png) |
+
+The difference in one glance: the room centre reads 20.4 °C while the wall unit believes it is already at 25 °C.
+
+![Tile cards: SteadyRoom heating to 21.0 °C, room centre 20.4 °C, wall unit 25 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/tiles.png)
+
 It replaces what usually takes an automation and a handful of helpers: a target helper, a mode selector, an on/off switch for the schedule and four time helpers.
+
+## Get started
+
+Requires Home Assistant 2026.10 or newer.
+
+1. In Home Assistant open the **Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`.
+2. Install **SteadyRoom** and restart Home Assistant.
+3. **Settings → Devices & services → Add integration → SteadyRoom**.
+4. Select the air conditioner, the room temperature sensor and, optionally, a fallback sensor, door/window contacts and a schedule.
+5. A new device starts with **Observe only** switched on and no mode chosen: it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then turn **Observe only** off on the device page to let SteadyRoom take over.
 
 ## How it decides
 
@@ -25,6 +67,8 @@ Between start and stop the unit keeps doing what it did (hysteresis). In **Auto*
 ## The setpoint sent to the unit
 
 The setpoint is the unit's own measured temperature plus an offset (minus, when cooling). The offset depends on how far the room is from the target:
+
+![Offset over distance to target: 0.5 K near the target, growing quadratically beyond 0.5 K, in 0.5 K steps](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/offset.png)
 
 - up to 0.5 K away: 0.5 K,
 - beyond that it grows quadratically: g = d + 0.5 · (d − 0.5)², rounded up to the unit's step (usually 0.5 K).
@@ -54,16 +98,6 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 - In mode **Off** SteadyRoom keeps the unit off. That includes *dry* or *fan only* started from the remote or another app: SteadyRoom switches it off again.
 - Mode, target, last direction and the lock survive restarts.
 - It only ever sends commands to the unit you selected. If you rename the unit, a sensor, a contact or the schedule, SteadyRoom follows the new entity id. If the unit's entity is removed, SteadyRoom stops sending and never commands another entity that later takes over the old id; select the unit again under **Configure**.
-
-## Installation
-
-Requires Home Assistant 2026.10 or newer.
-
-1. In Home Assistant open the **Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`.
-2. Install **SteadyRoom** and restart Home Assistant.
-3. **Settings → Devices & services → Add integration → SteadyRoom**.
-4. Select the air conditioner, the room temperature sensor and, optionally, a fallback sensor, door/window contacts and a schedule.
-5. A new device starts with **Observe only** switched on and no mode chosen: it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then turn **Observe only** off on the device page to let SteadyRoom take over.
 
 ## Settings
 
