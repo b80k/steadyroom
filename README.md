@@ -26,7 +26,7 @@ Most split units measure the temperature at their own housing, high up on the wa
 
 SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool or off from a sensor in the middle of the room, and it gives the unit a setpoint relative to the unit's *own* reading. The unit therefore sees a clear demand and keeps running until the room itself is where you want it. Then it really switches off and stays off until the room needs it again.
 
-![Schematic: on its own the unit starts five times in two hours and the room stays below target; with SteadyRoom it starts once and holds the target band](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/before-after.png)
+![Schematic over six hours: on its own the unit runs ever shorter and the room stays below target; with SteadyRoom it reaches the target sooner and then makes a few long runs with growing off-times](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/before-after.png)
 
 *Schematic illustration of the effect, not a measurement.*
 
@@ -111,13 +111,13 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 - When the unit comes back after a connection loss, SteadyRoom sends nothing for 30 s, then re-sends mode and setpoint. Cloud-connected units otherwise keep running on a command they missed. A return from unavailable never counts as the end of a run, so it does not start the Auto lock.
 - A command the unit rejects is tried again after 30 s. `sent_setpoint` only shows setpoints the unit accepted.
 - Nothing is sent before Home Assistant has finished starting.
-- In mode **Off** SteadyRoom keeps the unit off. That includes *dry* or *fan only* started from the remote or another app: SteadyRoom switches it off again.
+- In mode **Off** SteadyRoom keeps the unit off (with **Control the unit** on, like everything SteadyRoom sends). That includes *dry* or *fan only* started from the remote or another app: SteadyRoom switches it off again.
 - Mode, target, last direction and the lock survive restarts.
 - It only ever sends commands to the unit you selected. If you rename the unit, a sensor, a contact or the schedule, SteadyRoom follows the new entity id. If the unit's entity is removed, SteadyRoom stops sending and never commands another entity that later takes over the old id; select the unit again under **Configure**.
 
 ## Settings
 
-All values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group. The defaults work for most split units; change one value at a time and watch a day before the next.
+All tuning values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group. The **Control the unit** switch sits among them; it is explained under [Test run](#test-run-control-the-unit). The defaults work for most split units; change one value at a time and watch a day before the next.
 
 ⚙️ marks fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
 

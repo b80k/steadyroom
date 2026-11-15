@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Add SteadyRoom",
-        "description": "SteadyRoom controls an air conditioner from a room temperature sensor, so the unit runs steadily instead of short cycling.",
+        "description": "SteadyRoom controls an air conditioner from a room temperature sensor, so the unit makes fewer, real runs instead of short cycling. A new device starts as a test run: it sends nothing to the unit until you switch on Control the unit on the device page.",
         "data": {
           "name": "Name",
           "underlying": "Air conditioner",

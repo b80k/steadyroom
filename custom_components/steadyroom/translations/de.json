@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "SteadyRoom hinzufügen",
-        "description": "SteadyRoom steuert eine Klimaanlage nach einem Raumtemperatur-Fühler, damit sie gleichmäßig durchläuft, statt zu takten.",
+        "description": "SteadyRoom steuert eine Klimaanlage nach einem Raumtemperatur-Fühler, damit sie weniger, dafür echte Läufe macht, statt zu takten. Ein neues Gerät startet als Probelauf: Es sendet nichts an die Anlage, bis du auf der Geräteseite „Anlage steuern“ einschaltest.",
         "data": {
           "name": "Name",
           "underlying": "Klimaanlage",
