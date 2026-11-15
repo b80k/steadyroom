@@ -7,10 +7,10 @@
 [![Validate](https://github.com/b80k/steadyroom/actions/workflows/validate.yml/badge.svg)](https://github.com/b80k/steadyroom/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3B82F6)](LICENSE)
 
-**Your heat pump switches on, off, on, off, and the sofa never gets warm? SteadyRoom fixes that.** It stops short cycling of air conditioners whose built-in sensor sits in the wrong place, and turns them into a calm, precise room thermostat.
+**Your heat pump switches on, off, on, off, and the sofa never gets warm? SteadyRoom fixes that.** It cuts the short cycling of air conditioners whose built-in sensor sits in the wrong place down to fewer, real runs, and turns them into a calm, precise room thermostat.
 
 - 🎯 **Measures where you live**: decides from a sensor in the middle of the room, not from the unit's housing.
-- 🌊 **Runs gently instead of cycling**: one steady run to the target instead of a stop-and-go every few minutes.
+- 🌊 **Fewer, real runs**: the unit runs until the room is in the band and is then really off, instead of flicking between idle and running every few minutes.
 - 🧩 **One entity, no automation spaghetti**: works with the standard Thermostat and Tile cards, all settings on the device page.
 - 🛡️ **Safe to try**: every new device starts in *Observe only* and touches nothing until you let it.
 
@@ -24,7 +24,7 @@ Most split units measure the temperature at their own housing, high up on the wa
 
 ![Room sensor to SteadyRoom to your unit](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/how-it-works.png)
 
-SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool or off from a sensor in the middle of the room, and it gives the unit a setpoint relative to the unit's *own* reading. The unit therefore always sees a clear, steady demand and keeps running gently until the room itself is where you want it.
+SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool or off from a sensor in the middle of the room, and it gives the unit a setpoint relative to the unit's *own* reading. The unit therefore sees a clear demand and keeps running until the room itself is where you want it. Then it really switches off and stays off until the room needs it again.
 
 ![Schematic: on its own the unit starts five times in two hours and the room stays below target; with SteadyRoom it starts once and holds the target band](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/before-after.png)
 
