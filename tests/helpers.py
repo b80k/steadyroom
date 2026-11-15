@@ -38,6 +38,8 @@ UNIT_FEATURES = (
     ClimateEntityFeature.TARGET_TEMPERATURE
     | ClimateEntityFeature.FAN_MODE
     | ClimateEntityFeature.SWING_MODE
+    | ClimateEntityFeature.SWING_HORIZONTAL_MODE
+    | ClimateEntityFeature.PRESET_MODE
     | ClimateEntityFeature.TURN_ON
     | ClimateEntityFeature.TURN_OFF
 )
@@ -135,6 +137,10 @@ def set_unit(
         "fan_mode": "auto",
         "swing_modes": ["auto", "up", "down"],
         "swing_mode": "auto",
+        "swing_horizontal_modes": ["auto", "left", "right"],
+        "swing_horizontal_mode": "auto",
+        "preset_modes": ["none", "quiet", "powerful"],
+        "preset_mode": "none",
         "supported_features": int(UNIT_FEATURES),
     }
     if current is not None:

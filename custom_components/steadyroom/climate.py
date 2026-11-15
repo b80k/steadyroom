@@ -15,12 +15,18 @@ from homeassistant.components.climate import (
     ATTR_FAN_MODES,
     ATTR_HVAC_ACTION,
     ATTR_HVAC_MODE,
+    ATTR_PRESET_MODE,
+    ATTR_PRESET_MODES,
+    ATTR_SWING_HORIZONTAL_MODE,
+    ATTR_SWING_HORIZONTAL_MODES,
     ATTR_SWING_MODE,
     ATTR_SWING_MODES,
     ATTR_TARGET_TEMP_STEP,
     DOMAIN as CLIMATE_DOMAIN,
     SERVICE_SET_FAN_MODE,
     SERVICE_SET_HVAC_MODE,
+    SERVICE_SET_PRESET_MODE,
+    SERVICE_SET_SWING_HORIZONTAL_MODE,
     SERVICE_SET_SWING_MODE,
     SERVICE_SET_TEMPERATURE,
     ClimateEntity,
@@ -154,6 +160,15 @@ def _renamed(options: dict[str, Any], old: str, new: str) -> dict[str, Any]:
         else:
             renamed[key] = new if value == old else value
     return renamed
+
+
+# Unit features SteadyRoom mirrors 1:1: the user's own choices, never SteadyRoom's decisions.
+_PASSTHROUGH_FEATURES = (
+    ClimateEntityFeature.FAN_MODE,
+    ClimateEntityFeature.SWING_MODE,
+    ClimateEntityFeature.SWING_HORIZONTAL_MODE,
+    ClimateEntityFeature.PRESET_MODE,
+)
 
 
 @dataclass
@@ -786,6 +801,16 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
         """Pass the swing mode through to the unit (also in observation mode, like the fan mode)."""
         await self._async_call_unit(SERVICE_SET_SWING_MODE, {ATTR_SWING_MODE: swing_mode}, self._context)
 
+    async def async_set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
+        """Pass the horizontal swing mode through to the unit (also in observation mode)."""
+        await self._async_call_unit(
+            SERVICE_SET_SWING_HORIZONTAL_MODE, {ATTR_SWING_HORIZONTAL_MODE: swing_horizontal_mode}, self._context
+        )
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Pass the unit's own preset through, such as quiet or powerful (also in observation mode)."""
+        await self._async_call_unit(SERVICE_SET_PRESET_MODE, {ATTR_PRESET_MODE: preset_mode}, self._context)
+
     # ------------------------------------------------------------------ state
 
     def _unit_state(self) -> State | None:
@@ -793,13 +818,13 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
 
     @property
     def supported_features(self) -> ClimateEntityFeature:
-        """Target, on/off; fan and swing only when the unit has them."""
+        """Target, on/off; fan, swing and presets only when the unit has them."""
         features = (
             ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
         )
         unit = self._unit_state()
         unit_features = int(_number(unit.attributes.get(ATTR_SUPPORTED_FEATURES)) or 0) if unit is not None else 0
-        for feature in (ClimateEntityFeature.FAN_MODE, ClimateEntityFeature.SWING_MODE):
+        for feature in _PASSTHROUGH_FEATURES:
             if unit_features & feature:
                 features |= feature
         return features
@@ -853,6 +878,30 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
         """Swing modes the unit offers."""
         unit = self._unit_state()
         return unit.attributes.get(ATTR_SWING_MODES) if unit is not None else None
+
+    @property
+    def swing_horizontal_mode(self) -> str | None:
+        """Horizontal swing mode of the unit."""
+        unit = self._unit_state()
+        return unit.attributes.get(ATTR_SWING_HORIZONTAL_MODE) if unit is not None else None
+
+    @property
+    def swing_horizontal_modes(self) -> list[str] | None:
+        """Horizontal swing modes the unit offers."""
+        unit = self._unit_state()
+        return unit.attributes.get(ATTR_SWING_HORIZONTAL_MODES) if unit is not None else None
+
+    @property
+    def preset_mode(self) -> str | None:
+        """Preset of the unit."""
+        unit = self._unit_state()
+        return unit.attributes.get(ATTR_PRESET_MODE) if unit is not None else None
+
+    @property
+    def preset_modes(self) -> list[str] | None:
+        """Presets the unit offers."""
+        unit = self._unit_state()
+        return unit.attributes.get(ATTR_PRESET_MODES) if unit is not None else None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

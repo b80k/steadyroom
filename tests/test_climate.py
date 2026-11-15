@@ -310,6 +310,47 @@ async def test_passthrough_fan_and_swing(hass: HomeAssistant, freezer: FrozenDat
     assert attrs(hass)["swing_mode"] == "up"
 
 
+async def test_passthrough_preset_and_horizontal_swing(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog
+) -> None:
+    """The unit's own presets (such as quiet) and its horizontal swing mirror the unit and are set on it."""
+    await start(hass, freezer, calls, mode="off")
+    state = attrs(hass)
+    assert state["preset_modes"] == ["none", "quiet", "powerful"]
+    assert state["preset_mode"] == "none"
+    assert state["swing_horizontal_modes"] == ["auto", "left", "right"]
+    assert state["swing_horizontal_mode"] == "auto"
+    assert state["supported_features"] & ClimateEntityFeature.PRESET_MODE
+    assert state["supported_features"] & ClimateEntityFeature.SWING_HORIZONTAL_MODE
+
+    await call_entity(hass, "set_preset_mode", preset_mode="quiet")
+    await call_entity(hass, "set_swing_horizontal_mode", swing_horizontal_mode="left")
+    assert calls.to_unit() == [
+        ("set_preset_mode", {"preset_mode": "quiet"}),
+        ("set_swing_horizontal_mode", {"swing_horizontal_mode": "left"}),
+    ]
+
+    set_unit(hass, "off", preset_mode="quiet", swing_horizontal_mode="left")
+    await hass.async_block_till_done()
+    assert attrs(hass)["preset_mode"] == "quiet"
+    assert attrs(hass)["swing_horizontal_mode"] == "left"
+
+
+async def test_preset_survives_steadyroom_running_the_unit(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog
+) -> None:
+    """SteadyRoom's own commands never touch the preset: it only sends mode and setpoint."""
+    await start(hass, freezer, calls, mode="off", room=20.0)
+    set_unit(hass, "off", preset_mode="quiet")
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    sent = calls.to_unit()
+    assert sent, "SteadyRoom should start the unit"
+    assert {service for service, _ in sent} <= {"set_hvac_mode", "set_temperature", "turn_on"}
+    assert all("preset_mode" not in data for _, data in sent)
+    assert attrs(hass)["preset_mode"] == "quiet"
+
+
 async def test_passthrough_only_what_the_unit_supports(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog
 ) -> None:
@@ -321,8 +362,13 @@ async def test_passthrough_only_what_the_unit_supports(
     features = attrs(hass)["supported_features"]
     assert not features & ClimateEntityFeature.FAN_MODE
     assert not features & ClimateEntityFeature.SWING_MODE
+    assert not features & ClimateEntityFeature.SWING_HORIZONTAL_MODE
+    assert not features & ClimateEntityFeature.PRESET_MODE
+    assert "preset_modes" not in attrs(hass)
     with pytest.raises(HomeAssistantError):
         await call_entity(hass, "set_fan_mode", fan_mode="high")
+    with pytest.raises(HomeAssistantError):
+        await call_entity(hass, "set_preset_mode", preset_mode="quiet")
     assert calls.to_unit() == []
 
 
@@ -1200,7 +1246,8 @@ async def test_beobachten_fan_and_swing_still_pass_through(
     entry = await setup_entry(hass)
     await _observe(hass, entry, True)
     await call_entity(hass, "set_fan_mode", fan_mode="low")
-    assert calls.to_unit() == [("set_fan_mode", {"fan_mode": "low"})]
+    await call_entity(hass, "set_preset_mode", preset_mode="quiet")
+    assert calls.to_unit() == [("set_fan_mode", {"fan_mode": "low"}), ("set_preset_mode", {"preset_mode": "quiet"})]
 
 
 # ---------------------------------------------------------------- audit round: failures, staleness, renames

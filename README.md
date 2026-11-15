@@ -32,7 +32,7 @@ SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool 
 
 ## What you get
 
-One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed and vane position pass through to your unit. All tuning values live as settings on the device page.
+One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed, vane position (up and down, left and right) and your unit's own presets, such as *quiet* or *powerful*, pass through to your unit. SteadyRoom offers exactly what your unit reports, nothing more. Extras your integration adds as separate entities, such as an air purifier switch, stay on the unit's own device. All tuning values live as settings on the device page.
 
 | Thermostat card | Device page |
 |---|---|
@@ -173,7 +173,7 @@ To change the unit, sensors, contacts or schedule later, use **Configure** on th
 
 Every new device starts with the **Observe only** switch on; turn it off to let SteadyRoom take over. While it is on, SteadyRoom decides as usual but sends nothing to the unit; the attributes `would_hvac_mode` and `would_setpoint` show what it would do, so you can compare it with an existing automation for a few days. The Auto lock follows what the real unit does. Turning the switch off makes SteadyRoom take over and send mode and setpoint at once. The switch position is stored with the device's configuration and survives a crash.
 
-Fan speed and vane position still pass through to the unit while observing: they are your own commands, not SteadyRoom's decisions.
+Fan speed, vane position and presets still pass through to the unit while observing: they are your own commands, not SteadyRoom's decisions.
 
 Until you choose a mode for the first time, SteadyRoom sends nothing at all, even with **Observe only** off (`reason: not_configured`).
 
@@ -183,4 +183,4 @@ The climate entity carries attributes that explain every decision: `reason` (`no
 
 ## Not included
 
-SteadyRoom does not compute the room temperature from several sensors, does not drive radiator valves or relays, and has no presence or presets. Use any temperature sensor you trust as input.
+SteadyRoom does not compute the room temperature from several sensors, does not drive radiator valves or relays, and has no presence detection or presets of its own: the presets you see are your unit's. A unit preset that changes the unit's own setpoint, such as *eco* or *away* on some units, is overridden by the next setpoint SteadyRoom sends. Use any temperature sensor you trust as input.
