@@ -15,6 +15,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_mock_restore_state_shutdown_restart,
+    mock_restore_cache,
     mock_restore_cache_with_extra_data,
 )
 
@@ -52,6 +53,7 @@ from helpers import (
     call_entity,
     number_entity_id,
     control_switch_id,
+    near_preset_select_id,
     set_room,
     set_unit,
     settle,
@@ -284,7 +286,7 @@ async def test_modes_one_device_holds_all_entities(hass: HomeAssistant) -> None:
     assert len(devices) == 1
     entities = er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
     assert {e.device_id for e in entities} == {devices[0].id}
-    assert sorted(e.domain for e in entities) == ["climate"] + ["number"] * len(NUMBER_SPECS) + ["switch"]
+    assert sorted(e.domain for e in entities) == ["climate"] + ["number"] * len(NUMBER_SPECS) + ["select", "switch"]
 
 
 # ---------------------------------------------------------------- ISC-3 passthrough
@@ -1573,3 +1575,150 @@ async def test_nur_unterlage_no_call_targets_anything_else(
     assert all(call.domain == "climate" and call.entity_ids == [UNIT] for call in from_steadyroom), from_steadyroom
     for entity_id in (ROOM, FALLBACK, DOOR, SCHEDULE):
         assert all(entity_id not in call.entity_ids for call in calls)
+
+
+# ---------------------------------------------------------------- ISC-29 nahe (preset near target)
+
+
+async def _choose_near_preset(hass: HomeAssistant, entry: MockConfigEntry, option: str) -> None:
+    await hass.services.async_call(
+        "select", "select_option", {"entity_id": near_preset_select_id(hass, entry), "option": option}, blocking=True
+    )
+    await hass.async_block_till_done()
+
+
+def _presets_sent(calls: CallLog) -> list[str]:
+    return [data["preset_mode"] for service, data in calls.to_unit() if service == "set_preset_mode"]
+
+
+async def test_nahe_select_offers_off_and_the_units_presets(hass: HomeAssistant) -> None:
+    """The select is a configuration entity: off by default, then exactly the unit's presets."""
+    set_unit(hass, "off")
+    set_room(hass, 21.0)
+    entry = await setup_entry(hass)
+    state = hass.states.get(near_preset_select_id(hass, entry))
+    assert state is not None
+    assert state.state == "off"
+    assert state.attributes["options"] == ["off", "none", "quiet", "powerful"]
+    assert er.async_get(hass).async_get(state.entity_id).entity_category is EntityCategory.CONFIG  # type: ignore[union-attr]
+
+    set_unit(hass, "off", preset_modes=["none", "eco"])
+    await hass.async_block_till_done()
+    assert hass.states.get(state.entity_id).attributes["options"] == ["off", "none", "eco"]  # type: ignore[union-attr]
+
+
+async def test_nahe_off_sends_no_preset(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog, unit_sim: UnitSim
+) -> None:
+    """With the select off, a run near the target never touches the preset."""
+    unit_sim.feedback = True
+    await start(hass, freezer, calls, mode="off", room=20.7)
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    set_room(hass, 21.1)
+    await tick(hass, freezer, 61)
+    assert calls.modes() == ["heat"]
+    assert _presets_sent(calls) == []
+
+
+async def test_nahe_start_near_target_uses_the_preset_at_once(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog, unit_sim: UnitSim
+) -> None:
+    """Leaving the band by a few tenths starts the run with the chosen preset."""
+    unit_sim.feedback = True
+    entry = await start(hass, freezer, calls, mode="off", room=20.7)
+    await _choose_near_preset(hass, entry, "quiet")
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    assert calls.modes() == ["heat"]
+    assert _presets_sent(calls) == ["quiet"]
+
+
+async def test_nahe_far_start_runs_without_preset_until_near_then_keeps_it(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog, unit_sim: UnitSim
+) -> None:
+    """Far from the target the run goes without preset; near it switches once and keeps it until the run ends."""
+    unit_sim.feedback = True
+    entry = await start(hass, freezer, calls, mode="off", room=19.0)
+    set_unit(hass, "off", preset_mode="quiet")
+    await _choose_near_preset(hass, entry, "quiet")
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    assert _presets_sent(calls) == ["none"]
+
+    set_room(hass, 20.5)  # 0.5 K away: still far
+    await tick(hass, freezer, 61)
+    assert _presets_sent(calls) == ["none"]
+
+    set_room(hass, 20.75)  # 0.25 K away: near
+    await tick(hass, freezer, 61)
+    assert _presets_sent(calls) == ["none", "quiet"]
+
+    set_room(hass, 20.4)  # falls back while still running: the preset stays
+    await tick(hass, freezer, 61)
+    assert _presets_sent(calls) == ["none", "quiet"]
+    assert calls.modes() == ["heat"]
+
+
+async def test_nahe_next_run_decides_afresh(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog, unit_sim: UnitSim
+) -> None:
+    """After a run ends, a start far from the target goes back to no preset."""
+    unit_sim.feedback = True
+    entry = await start(hass, freezer, calls, mode="off", room=20.75)
+    await _choose_near_preset(hass, entry, "quiet")
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    set_room(hass, 21.3)  # past the stop: the unit switches off
+    await tick(hass, freezer, 61)
+    set_room(hass, 19.5)  # far below: a new run
+    await tick(hass, freezer, 61)
+    assert calls.modes() == ["heat", "off", "heat"]
+    assert _presets_sent(calls) == ["quiet", "none"]
+
+
+async def test_nahe_manual_change_during_a_run_stays(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog, unit_sim: UnitSim
+) -> None:
+    """A preset changed by hand during a run is not overwritten until the next run."""
+    unit_sim.feedback = True
+    entry = await start(hass, freezer, calls, mode="off", room=20.7)
+    await _choose_near_preset(hass, entry, "quiet")
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    state = hass.states.get(UNIT)
+    assert state is not None
+    hass.states.async_set(UNIT, state.state, {**state.attributes, "preset_mode": "powerful"})
+    set_room(hass, 20.65)
+    await tick(hass, freezer, 61)
+    assert _presets_sent(calls) == ["quiet"]
+
+
+async def test_nahe_nothing_sent_in_a_test_run_or_without_presets(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, calls: CallLog
+) -> None:
+    """A test run sends no preset, and a unit without the chosen preset gets none either."""
+    entry = await start(hass, freezer, calls, mode="off", room=20.7)
+    await _choose_near_preset(hass, entry, "quiet")
+    await _observe(hass, entry, True)
+    await call_entity(hass, "set_hvac_mode", hvac_mode="heat")
+    await tick(hass, freezer, 5)
+    assert calls.to_unit() == []
+
+    await _observe(hass, entry, False)
+    calls.clear()
+    set_unit(hass, "heat", preset_modes=["none", "eco"], preset_mode="none")
+    set_room(hass, 20.65)
+    await tick(hass, freezer, 61)
+    assert _presets_sent(calls) == []
+
+
+async def test_nahe_choice_survives_a_restart(hass: HomeAssistant) -> None:
+    """The chosen preset is restored after a restart."""
+    set_unit(hass, "off")
+    set_room(hass, 21.0)
+    mock_restore_cache(hass, [State("select.wohnzimmer_preset_near_target", "quiet")])
+    entry = await setup_entry(hass)
+    assert hass.states.get(near_preset_select_id(hass, entry)).state == "quiet"  # type: ignore[union-attr]
+    assert entry.runtime_data.near_preset == "quiet"
+

@@ -116,6 +116,8 @@ class UnitSim:
             new_state = str(data["hvac_mode"])
         elif service == "set_temperature":
             attributes["temperature"] = data["temperature"]
+        elif service == "set_preset_mode":
+            attributes["preset_mode"] = data["preset_mode"]
         self.hass.states.async_set(UNIT, new_state, attributes)
 
 
@@ -221,6 +223,13 @@ def number_entity_id(hass: HomeAssistant, entry: MockConfigEntry, key: str) -> s
     """Entity id of the number entity for one tuning value."""
     entity_id = er.async_get(hass).async_get_entity_id("number", DOMAIN, f"{entry.entry_id}_{key}")
     assert entity_id is not None, key
+    return entity_id
+
+
+def near_preset_select_id(hass: HomeAssistant, entry: MockConfigEntry) -> str:
+    """Entity id of the "Preset · near target" select."""
+    entity_id = er.async_get(hass).async_get_entity_id("select", DOMAIN, f"{entry.entry_id}_near_target_preset")
+    assert entity_id is not None
     return entity_id
 
 

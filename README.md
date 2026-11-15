@@ -32,7 +32,7 @@ SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool 
 
 ## What you get
 
-One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed, vane position (up and down, left and right) and your unit's own presets, such as *quiet* or *powerful*, pass through to your unit. SteadyRoom offers exactly what your unit reports, nothing more. Extras your integration adds as separate entities, such as an air purifier switch, stay on the unit's own device. All tuning values live as settings on the device page.
+One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed, vane position (up and down, left and right) and your unit's own presets, such as *quiet* or *powerful*, pass through to your unit, and SteadyRoom can switch to one of them near the target ([Preset near the target](#preset-near-the-target)). SteadyRoom offers exactly what your unit reports, nothing more. Extras your integration adds as separate entities, such as an air purifier switch, stay on the unit's own device. All tuning values live as settings on the device page.
 
 | Thermostat card | Device page |
 |---|---|
@@ -117,7 +117,7 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 
 ## Settings
 
-All tuning values are number entities on the SteadyRoom device page and take effect immediately. Each name starts with its group, so the page lists them group by group. The **Control the unit** switch sits among them; it is explained under [Test run](#test-run-control-the-unit). The defaults work for most split units; change one value at a time and watch a day before the next.
+All tuning values are number entities on the SteadyRoom device page and take effect immediately, apart from **Preset · near target**, which is a selection. Each name starts with its group, so the page lists them group by group. The **Control the unit** switch sits among them; it is explained under [Test run](#test-run-control-the-unit). The defaults work for most split units; change one value at a time and watch a day before the next.
 
 ⚙️ marks fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
 
@@ -159,6 +159,17 @@ These only matter if you selected contacts during setup.
 | **Offset · knee** ⚙️ | 0–10 K | 0.5 K | Up to this distance from the target, the offset equals the distance, rounded up to the unit's step and never below the minimum. Beyond it, the offset grows faster than the distance. |
 | **Offset · growth factor** ⚙️ | 0–10 | 0.5 | How much faster it grows beyond the knee: offset = d + factor · (d − knee)². Raise it to catch up faster from far behind, for example after a cold night; 0 makes the offset follow the distance. |
 
+### Preset near the target
+
+Only offered when your unit has presets, such as *quiet* on many Panasonic units. A quiet preset keeps a run gentle once the room is almost there, while a start from far away still gets full power.
+
+| Setting | Enter | Default | What it does |
+|---|---|---|---|
+| **Preset · near target** | Off or one of your unit's presets | Off | Off leaves the preset to you. With a preset chosen, SteadyRoom sends it as soon as the room is within **Preset · distance** of the target, at the start of a run or during it, and keeps it until the run ends. A run that starts further away runs with *none*, if your unit offers it. |
+| **Preset · distance** | 0–5 K | 0.3 K | How close to the target the room must be for the near-target preset. Starts after the room has just left the band are this close, so they run with the preset. |
+
+While a preset is chosen here, SteadyRoom sets the unit's preset at the start of every run. If you change the preset by hand during a run, SteadyRoom leaves your choice until that run ends.
+
 ### Unit and sensor
 
 | Setting | Enter | Default | What it does |
@@ -185,4 +196,4 @@ The climate entity carries attributes that explain every decision: `reason` (`no
 
 ## Not included
 
-SteadyRoom does not compute the room temperature from several sensors, does not drive radiator valves or relays, and has no presence detection or presets of its own: the presets you see are your unit's. A unit preset that changes the unit's own setpoint, such as *eco* or *away* on some units, is overridden by the next setpoint SteadyRoom sends. Use any temperature sensor you trust as input.
+SteadyRoom does not compute the room temperature from several sensors, does not drive radiator valves or relays, and has no presence detection or presets of its own: the presets you see are your unit's. A unit preset that changes the unit's own setpoint, such as *eco* or *away* on some units, is overridden by the next setpoint SteadyRoom sends; choose such a preset for **Preset · near target** only if your unit keeps the setpoint SteadyRoom sends. Use any temperature sensor you trust as input.

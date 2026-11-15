@@ -9,7 +9,14 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, callback
 
-from .const import EXTRA_DEFAULTS, KEY_DOOR_CLOSE_DELAY, KEY_DOOR_OPEN_DELAY, KEY_SENSOR_MAX_AGE, NUMBER_SPECS
+from .const import (
+    EXTRA_DEFAULTS,
+    KEY_DOOR_CLOSE_DELAY,
+    KEY_DOOR_OPEN_DELAY,
+    KEY_PRESET_DISTANCE,
+    KEY_SENSOR_MAX_AGE,
+    NUMBER_SPECS,
+)
 from .logic import DEFAULT_PARAMETERS, Parameters
 
 PARAMETER_KEYS = frozenset(f.name for f in fields(Parameters))
@@ -33,6 +40,8 @@ class SteadyRoomRuntime:
     values: dict[str, float] = field(default_factory=default_values)
     # Observation mode (ISC-21): decide everything, send nothing to the unit.
     observe_only: bool = False
+    # The unit's preset to use near the target (ISC-29); None leaves the preset alone.
+    near_preset: str | None = None
     _listeners: list[Callable[[], None]] = field(default_factory=list)
 
     def parameters(self) -> Parameters:
@@ -54,6 +63,17 @@ class SteadyRoomRuntime:
         """Oldest report a temperature sensor may have; None when the limit is off."""
         minutes = self.values[KEY_SENSOR_MAX_AGE]
         return timedelta(minutes=minutes) if minutes > 0 else None
+
+    @property
+    def preset_distance(self) -> float:
+        """How close to the target (K) the room must be for the near-target preset."""
+        return self.values[KEY_PRESET_DISTANCE]
+
+    @callback
+    def async_set_near_preset(self, preset: str | None) -> None:
+        """Choose the near-target preset (None: off) and tell every listener."""
+        self.near_preset = preset
+        self._notify()
 
     @callback
     def async_set_value(self, key: str, value: float) -> None:

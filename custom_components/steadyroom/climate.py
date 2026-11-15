@@ -70,6 +70,7 @@ from .const import (
     DEFAULT_TARGET,
     MAX_TARGET,
     MIN_TARGET,
+    PRESET_NONE,
     RECONNECT_SETTLE,
     SERVICE_TIMEOUT_SECONDS,
     Reason,
@@ -263,6 +264,10 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
         self._seen_direction: Direction | None = None
         # Direction a door switched off; resumed once all contacts are closed long enough.
         self._door_resume: Direction | None = None
+        # Near-target preset (ISC-29): once the room came near the target in a run, the run
+        # keeps that preset; the last preset SteadyRoom sent, so a manual change mid-run stays.
+        self._near_latched = False
+        self._sent_preset: str | None = None
         self._open_since: datetime | None = None
         self._closed_since: datetime | None = _LONG_AGO
 
@@ -703,6 +708,9 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
         diagnostics = self._diagnostics
         observing = self._runtime.observe_only
         if desired is Direction.OFF:
+            # A run ended (or none runs): the next start decides the preset afresh.
+            self._near_latched = False
+            self._sent_preset = None
             diagnostics.offset = None
             diagnostics.would_hvac_mode = HVACMode.OFF.value
             diagnostics.would_setpoint = None
@@ -742,9 +750,33 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
                 diagnostics.sent_setpoint = setpoint
             else:
                 ok = False
+        if (preset := self._wanted_preset(unit, distance)) is not None and (
+            unit.attributes.get(ATTR_PRESET_MODE) != preset and (force or preset != self._sent_preset)
+        ):
+            if await self._async_call(SERVICE_SET_PRESET_MODE, {ATTR_PRESET_MODE: preset}, context):
+                self._sent_preset = preset
+            else:
+                ok = False
         if not ok:
             self._schedule_retry()
         return ok
+
+    def _wanted_preset(self, unit: State, distance: float) -> str | None:
+        """The preset a running unit should have, or None to leave it alone (ISC-29).
+
+        ``distance`` is how far the room still is from the target in the running
+        direction (negative once past it). Near the target the chosen preset wins and
+        stays for the rest of the run; further away the unit runs without a preset.
+        """
+        chosen = self._runtime.near_preset
+        presets = unit.attributes.get(ATTR_PRESET_MODES) or []
+        if chosen is None or chosen not in presets:
+            return None
+        if distance <= self._runtime.preset_distance + logic.EPSILON:
+            self._near_latched = True
+        if self._near_latched:
+            return chosen
+        return PRESET_NONE if PRESET_NONE in presets else None
 
     def _may_send(self, now: datetime) -> bool:
         """Commands wait for the start of Home Assistant and for a returning unit to settle."""

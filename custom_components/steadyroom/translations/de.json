@@ -176,11 +176,32 @@
       },
       "sensor_max_age": {
         "name": "Fühler · maximales Alter"
+      },
+      "preset_distance": {
+        "name": "Preset · Abstand"
       }
     },
     "switch": {
       "control": {
         "name": "Anlage steuern"
+      }
+    },
+    "select": {
+      "near_target_preset": {
+        "name": "Preset · nahe am Ziel",
+        "state": {
+          "off": "Aus",
+          "none": "Keins",
+          "quiet": "Leise",
+          "powerful": "Kraftvoll",
+          "eco": "Eco",
+          "boost": "Boost",
+          "comfort": "Komfort",
+          "sleep": "Schlafen",
+          "away": "Abwesend",
+          "home": "Zuhause",
+          "activity": "Aktivität"
+        }
       }
     }
   },

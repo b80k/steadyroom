@@ -17,7 +17,13 @@ from custom_components.steadyroom.const import NUMBER_SPECS
 from custom_components.steadyroom.logic import Parameters
 from helpers import ENTITY, CallLog, call_entity, number_entity_id, set_room, set_unit, settle, setup_entry
 
-EXPECTED_DEFAULTS = {**asdict(Parameters()), "door_open_delay": 60.0, "door_close_delay": 15.0, "sensor_max_age": 0.0}
+EXPECTED_DEFAULTS = {
+    **asdict(Parameters()),
+    "door_open_delay": 60.0,
+    "door_close_delay": 15.0,
+    "sensor_max_age": 0.0,
+    "preset_distance": 0.3,
+}
 EXPECTED_UNITS = {
     "heat_start": "K",
     "heat_stop": "K",
@@ -34,6 +40,7 @@ EXPECTED_UNITS = {
     "door_open_delay": "s",
     "door_close_delay": "s",
     "sensor_max_age": "min",
+    "preset_distance": "K",
 }
 
 

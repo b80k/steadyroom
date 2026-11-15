@@ -176,11 +176,32 @@
       },
       "sensor_max_age": {
         "name": "Sensor · maximum age"
+      },
+      "preset_distance": {
+        "name": "Preset · distance"
       }
     },
     "switch": {
       "control": {
         "name": "Control the unit"
+      }
+    },
+    "select": {
+      "near_target_preset": {
+        "name": "Preset · near target",
+        "state": {
+          "off": "Off",
+          "none": "None",
+          "quiet": "Quiet",
+          "powerful": "Powerful",
+          "eco": "Eco",
+          "boost": "Boost",
+          "comfort": "Comfort",
+          "sleep": "Sleep",
+          "away": "Away",
+          "home": "Home",
+          "activity": "Activity"
+        }
       }
     }
   },
