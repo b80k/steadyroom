@@ -12,7 +12,7 @@
 - 🎯 **Measures where you live**: decides from a sensor in the middle of the room, not from the unit's housing.
 - 🌊 **Fewer, real runs**: the unit runs until the room is in the band and is then really off, instead of flicking between idle and running every few minutes.
 - 🧩 **One entity, no automation spaghetti**: works with the standard Thermostat and Tile cards, all settings on the device page.
-- 🛡️ **Safe to try**: every new device starts in *Observe only* and touches nothing until you let it.
+- 🛡️ **Safe to try**: every new device starts as a test run and touches nothing until you switch on *Control the unit*.
 
 ## The problem
 
@@ -52,7 +52,7 @@ Requires Home Assistant 2026.10 or newer.
 2. Install **SteadyRoom** and restart Home Assistant.
 3. **Settings → Devices & services → Add integration → SteadyRoom**.
 4. Fill in the setup fields below: the air conditioner and the room temperature sensor are required, the rest is optional.
-5. A new device starts with **Observe only** switched on and no mode chosen: it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then turn **Observe only** off on the device page to let SteadyRoom take over.
+5. A new device starts as a test run: **Control the unit** is off and no mode is chosen, so it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then switch **Control the unit** on (device page, *Configuration*) to let SteadyRoom take over.
 
 ### Setup fields
 
@@ -169,17 +169,19 @@ These only matter if you selected contacts during setup.
 
 To change the unit, sensors, contacts or schedule later, use **Configure** on the integration.
 
-### Observe only
+### Test run: Control the unit
 
-Every new device starts with the **Observe only** switch on; turn it off to let SteadyRoom take over. While it is on, SteadyRoom decides as usual but sends nothing to the unit; the attributes `would_hvac_mode` and `would_setpoint` show what it would do, so you can compare it with an existing automation for a few days. The Auto lock follows what the real unit does. Turning the switch off makes SteadyRoom take over and send mode and setpoint at once. The switch position is stored with the device's configuration and survives a crash.
+Every new device starts with the **Control the unit** switch off; switch it on to let SteadyRoom take over. While it is off, SteadyRoom decides as usual but sends nothing to the unit; the attributes `would_hvac_mode` and `would_setpoint` show what it would do, so you can compare it with an existing automation for a few days. The Auto lock follows what the real unit does. Switching it on makes SteadyRoom take over and send mode and setpoint at once. The switch position is stored with the device's configuration and survives a crash.
 
-Fan speed, vane position and presets still pass through to the unit while observing: they are your own commands, not SteadyRoom's decisions.
+Fan speed, vane position and presets still pass through to the unit during a test run: they are your own commands, not SteadyRoom's decisions.
 
-Until you choose a mode for the first time, SteadyRoom sends nothing at all, even with **Observe only** off (`reason: not_configured`).
+Until you choose a mode for the first time, SteadyRoom sends nothing at all, even with **Control the unit** on (`reason: not_configured`).
+
+Updating from 0.1.2 or earlier replaces the former *Observe only* switch with **Control the unit** and keeps the meaning: a room that was observing stays in a test run, a room under control stays under control.
 
 ## Diagnostics
 
-The climate entity carries attributes that explain every decision: `reason` (`not_configured`, `off_mode`, `in_band`, `heating`, `cooling`, `door_open`, `outside_schedule`, `locked`, `sensor_missing`, `unit_unavailable`), `distance`, `offset`, `sent_setpoint`, `last_direction`, `run_ended_at`, `locked_direction`, `lock_until`, `would_hvac_mode`, `would_setpoint`, `observe_only`.
+The climate entity carries attributes that explain every decision: `reason` (`not_configured`, `off_mode`, `in_band`, `heating`, `cooling`, `door_open`, `outside_schedule`, `locked`, `sensor_missing`, `unit_unavailable`), `distance`, `offset`, `sent_setpoint`, `last_direction`, `run_ended_at`, `locked_direction`, `lock_until`, `would_hvac_mode`, `would_setpoint`, `controls_unit`.
 
 ## Not included
 

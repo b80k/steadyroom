@@ -109,7 +109,7 @@ class SteadyRoomConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=_name(user_input),
                     data={},
-                    # A new device only watches until the user turns "Observe only" off.
+                    # A new device only watches until the user turns "Control the unit" on.
                     options={**_clean(user_input), CONF_OBSERVE_ONLY: DEFAULT_OBSERVE_ONLY},
                 )
         schema = _schema()

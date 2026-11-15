@@ -41,6 +41,7 @@ from helpers import (
     DOOR,
     ENTITY,
     FALLBACK,
+    LEGACY_OBSERVE_SWITCH,
     ROOM,
     SCHEDULE,
     UNIT,
@@ -50,7 +51,7 @@ from helpers import (
     attrs,
     call_entity,
     number_entity_id,
-    observe_switch_id,
+    control_switch_id,
     set_room,
     set_unit,
     settle,
@@ -1097,25 +1098,26 @@ async def test_restore_ignores_broken_data(hass: HomeAssistant) -> None:
 
 
 async def _observe(hass: HomeAssistant, entry: MockConfigEntry, on: bool) -> None:
+    """Start (on) or end (off) a test run: switch "Control the unit" the opposite way."""
     await hass.services.async_call(
-        "switch", "turn_on" if on else "turn_off", {"entity_id": observe_switch_id(hass, entry)}, blocking=True
+        "switch", "turn_off" if on else "turn_on", {"entity_id": control_switch_id(hass, entry)}, blocking=True
     )
     await hass.async_block_till_done()
 
 
 async def test_beobachten_switch_follows_entry_option(hass: HomeAssistant) -> None:
-    """The observation switch is a configuration entity showing the entry's option (off here)."""
+    """The control switch is a configuration entity showing the entry's option (controlling here)."""
     set_unit(hass, "off")
     set_room(hass, 21.0)
     entry = await setup_entry(hass)
-    switch = observe_switch_id(hass, entry)
+    switch = control_switch_id(hass, entry)
     state = hass.states.get(switch)
     assert state is not None
-    assert state.state == "off"
+    assert state.state == "on"
     registry_entry = er.async_get(hass).async_get(switch)
     assert registry_entry is not None
     assert registry_entry.entity_category is EntityCategory.CONFIG
-    assert attrs(hass)["observe_only"] is False
+    assert attrs(hass)["controls_unit"] is True
 
 
 async def test_beobachten_sends_nothing_across_heat_cool_off_door_reconnect(
@@ -1163,7 +1165,7 @@ async def test_beobachten_sends_nothing_across_heat_cool_off_door_reconnect(
 
     assert calls.to_unit() == []
     assert trace == [("heat", 24.5), ("cool", 21.5), ("off", None), ("off", None)]
-    assert attrs(hass)["observe_only"] is True
+    assert attrs(hass)["controls_unit"] is False
     assert attrs(hass)["reason"] == "off_mode"
 
 
@@ -1202,7 +1204,7 @@ async def test_beobachten_switching_off_sends_everything(
 
     await _observe(hass, entry, False)
     assert calls.to_unit() == [("set_hvac_mode", {"hvac_mode": "heat"}), ("set_temperature", {"temperature": 24.5})]
-    assert attrs(hass)["observe_only"] is False
+    assert attrs(hass)["controls_unit"] is True
     assert attrs(hass)["sent_setpoint"] == 24.5
 
 
@@ -1216,9 +1218,21 @@ async def test_beobachten_survives_a_crash(
     entry = await setup_entry(hass, **{CONF_OBSERVE_ONLY: True})
     await tick(hass, freezer, 31)
 
-    assert hass.states.get(observe_switch_id(hass, entry)).state == "on"  # type: ignore[union-attr]
+    assert hass.states.get(control_switch_id(hass, entry)).state == "off"  # type: ignore[union-attr]
     assert calls.to_unit() == []
     assert attrs(hass)["would_hvac_mode"] == "heat"
+
+
+async def test_beobachten_replaces_the_former_observe_switch(hass: HomeAssistant) -> None:
+    """Updating from 0.1.2 removes the "Observe only" switch and keeps its meaning, inverted."""
+    set_unit(hass, "off")
+    set_room(hass, 21.0)
+    entry = await setup_entry(hass, legacy_observe_switch=True, **{CONF_OBSERVE_ONLY: True})
+
+    assert er.async_get(hass).async_get(LEGACY_OBSERVE_SWITCH) is None
+    assert hass.states.get(LEGACY_OBSERVE_SWITCH) is None
+    assert hass.states.get(control_switch_id(hass, entry)).state == "off"  # type: ignore[union-attr]
+    assert attrs(hass)["controls_unit"] is False
 
 
 async def test_beobachten_switch_writes_the_entry(
@@ -1534,7 +1548,7 @@ async def test_nur_unterlage_no_call_targets_anything_else(
         lambda: set_room(hass, STATE_UNAVAILABLE),
         lambda: set_room(hass, 19.0),
     ]
-    switch = observe_switch_id(hass, entry)
+    switch = control_switch_id(hass, entry)
     for step in steps:
         step()
         await hass.async_block_till_done()
@@ -1547,10 +1561,10 @@ async def test_nur_unterlage_no_call_targets_anything_else(
         "number", "set_value", {"entity_id": number_entity_id(hass, entry, "heat_start"), "value": 0.5}, blocking=True
     )
     await tick(hass, freezer, 61)
-    await hass.services.async_call("switch", "turn_on", {"entity_id": switch}, blocking=True)
+    await hass.services.async_call("switch", "turn_off", {"entity_id": switch}, blocking=True)
     await call_entity(hass, "set_hvac_mode", hvac_mode="cool")
     await tick(hass, freezer, 61)
-    await hass.services.async_call("switch", "turn_off", {"entity_id": switch}, blocking=True)
+    await hass.services.async_call("switch", "turn_on", {"entity_id": switch}, blocking=True)
     await tick(hass, freezer, 61)
 
     own_entities = {ENTITY, switch} | {number_entity_id(hass, entry, spec.key) for spec in NUMBER_SPECS}

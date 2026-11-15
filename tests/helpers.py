@@ -155,7 +155,12 @@ def set_room(hass: HomeAssistant, value: float | str, entity_id: str = ROOM) -> 
     hass.states.async_set(entity_id, str(value), {"device_class": "temperature", "unit_of_measurement": "°C"})
 
 
-async def setup_entry(hass: HomeAssistant, *, enable_fine_tuning: bool = True, **options: Any) -> MockConfigEntry:
+LEGACY_OBSERVE_SWITCH = "switch.wohnzimmer_nur_beobachten"
+
+
+async def setup_entry(
+    hass: HomeAssistant, *, enable_fine_tuning: bool = True, legacy_observe_switch: bool = False, **options: Any
+) -> MockConfigEntry:
     """Create and set up a SteadyRoom entry over the simulated unit.
 
     Fine-tuning values are disabled by default in a real install; most tests drive
@@ -183,6 +188,11 @@ async def setup_entry(hass: HomeAssistant, *, enable_fine_tuning: bool = True, *
                 registry.async_get_or_create(
                     "number", DOMAIN, f"{entry.entry_id}_{spec.key}", config_entry=entry, suggested_object_id=f"wohnzimmer_{spec.key}"
                 )
+    if legacy_observe_switch:
+        # The "Observe only" switch as SteadyRoom 0.1.2 and earlier registered it.
+        er.async_get(hass).async_get_or_create(
+            "switch", DOMAIN, f"{entry.entry_id}_observe_only", config_entry=entry, suggested_object_id="wohnzimmer_nur_beobachten"
+        )
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     return entry
@@ -214,9 +224,9 @@ def number_entity_id(hass: HomeAssistant, entry: MockConfigEntry, key: str) -> s
     return entity_id
 
 
-def observe_switch_id(hass: HomeAssistant, entry: MockConfigEntry) -> str:
-    """Entity id of the observation switch."""
-    entity_id = er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_observe_only")
+def control_switch_id(hass: HomeAssistant, entry: MockConfigEntry) -> str:
+    """Entity id of the "Control the unit" switch."""
+    entity_id = er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_control")
     assert entity_id is not None
     return entity_id
 

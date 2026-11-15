@@ -913,7 +913,7 @@ class SteadyRoomClimate(ClimateEntity, RestoreEntity):
             "sent_setpoint": diagnostics.sent_setpoint,
             "would_hvac_mode": diagnostics.would_hvac_mode,
             "would_setpoint": diagnostics.would_setpoint,
-            "observe_only": self._runtime.observe_only,
+            "controls_unit": not self._runtime.observe_only,
             "last_direction": self._last_direction.value,
             "run_ended_at": _iso(self._run_ended_at),
             "locked_direction": diagnostics.locked_direction.value,

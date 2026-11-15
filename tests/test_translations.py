@@ -37,13 +37,13 @@ def test_translation_has_every_key(language: str) -> None:
 
 
 def test_translation_names_every_number_and_reason() -> None:
-    """Every tuning value and the observation switch have a name, every reason a text."""
+    """Every tuning value and the control switch have a name, every reason a text."""
     strings = _load("strings.json")
     assert set(strings["entity"]["number"]) == {spec.key for spec in NUMBER_SPECS}
     reasons = strings["entity"]["climate"]["steadyroom"]["state_attributes"]["reason"]["state"]
     assert set(reasons) == {reason.value for reason in Reason}
-    assert _load("translations/de.json")["entity"]["switch"]["observe_only"]["name"] == "Nur beobachten"
-    assert strings["entity"]["switch"]["observe_only"]["name"] == "Observe only"
+    assert _load("translations/de.json")["entity"]["switch"]["control"]["name"] == "Anlage steuern"
+    assert strings["entity"]["switch"]["control"]["name"] == "Control the unit"
 
 
 @pytest.mark.parametrize("name", ["strings.json", "translations/de.json"])

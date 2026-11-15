@@ -125,8 +125,8 @@
               "unit_unavailable": "Klimaanlage nicht verfügbar"
             }
           },
-          "observe_only": {
-            "name": "Nur beobachten"
+          "controls_unit": {
+            "name": "Steuert die Anlage"
           }
         }
       }
@@ -179,8 +179,8 @@
       }
     },
     "switch": {
-      "observe_only": {
-        "name": "Nur beobachten"
+      "control": {
+        "name": "Anlage steuern"
       }
     }
   },

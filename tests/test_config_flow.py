@@ -88,16 +88,16 @@ async def test_user_step_only_required_fields(hass: HomeAssistant) -> None:
 
 
 async def test_user_step_new_device_starts_observing(hass: HomeAssistant, calls: CallLog) -> None:
-    """A device added from the UI observes until the user turns "Observe only" off."""
+    """A device added from the UI is a test run until the user switches "Control the unit" on."""
     _states(hass)
     set_unit(hass, "heat", setpoint=24.0)
     result = await _user_flow(hass, {CONF_NAME: "Wohnzimmer", CONF_UNDERLYING: UNIT, CONF_ROOM_SENSOR: ROOM})
     await hass.async_block_till_done()
     entry = result["result"]
 
-    switch = er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_observe_only")
+    switch = er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_control")
     assert switch is not None
-    assert hass.states.get(switch).state == "on"  # type: ignore[union-attr]
+    assert hass.states.get(switch).state == "off"  # type: ignore[union-attr]
     await hass.services.async_call(
         "climate", "set_hvac_mode", {"entity_id": ENTITY, "hvac_mode": "off"}, blocking=True
     )
