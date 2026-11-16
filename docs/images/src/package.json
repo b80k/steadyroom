@@ -1,0 +1,11 @@
+{
+  "name": "steadyroom-readme-graphics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun illustrations.ts && bun charts.ts && bun cards.ts"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}
