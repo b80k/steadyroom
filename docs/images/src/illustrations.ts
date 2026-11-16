@@ -64,8 +64,8 @@ const icon = Buffer.from(await Bun.file(`${REPO}/custom_components/steadyroom/br
   <rect x="438" y="470" width="300" height="70" rx="18" fill="#CBD5E1"/>
   <rect x="438" y="436" width="44" height="104" rx="14" fill="#CBD5E1"/>
   <rect x="694" y="436" width="44" height="104" rx="14" fill="#CBD5E1"/>
-  <circle cx="588" cy="380" r="12" fill="${BLUE}"/>
-  <line x1="588" y1="392" x2="588" y2="440" stroke="${BLUE}" stroke-width="4"/>
+  <line x1="588" y1="360" x2="588" y2="428" stroke="${BLUE}" stroke-width="4"/>
+  <circle cx="588" cy="428" r="12" fill="${BLUE}"/>
   <rect x="514" y="320" width="148" height="48" rx="12" fill="${BLUE}"/>
   <text x="588" y="353" font-size="26" font-weight="700" fill="#FFF" text-anchor="middle">20.4 °C</text>
   <g font-size="22">
