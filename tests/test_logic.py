@@ -25,15 +25,15 @@ TARGET = 21.0
 @pytest.mark.parametrize(
     ("mode", "running", "room", "expected"),
     [
-        (M.HEAT, D.OFF, 20.79, D.HEAT),
-        (M.HEAT, D.OFF, 20.8, D.OFF),
-        (M.HEAT, D.HEAT, 21.1, D.HEAT),
+        (M.HEAT, D.OFF, 20.8, D.HEAT),  # at the start point
+        (M.HEAT, D.OFF, 20.81, D.OFF),
+        (M.HEAT, D.HEAT, 21.19, D.HEAT),
         (M.HEAT, D.HEAT, 21.2, D.OFF),
         (M.HEAT, D.OFF, 21.0, D.OFF),
         (M.HEAT, D.COOL, 21.0, D.OFF),
-        (M.COOL, D.OFF, 21.21, D.COOL),
-        (M.COOL, D.OFF, 21.2, D.OFF),
-        (M.COOL, D.COOL, 20.9, D.COOL),
+        (M.COOL, D.OFF, 21.2, D.COOL),  # at the start point
+        (M.COOL, D.OFF, 21.19, D.OFF),
+        (M.COOL, D.COOL, 20.81, D.COOL),
         (M.COOL, D.COOL, 20.8, D.OFF),
         (M.COOL, D.HEAT, 21.0, D.OFF),
         (M.OFF, D.HEAT, 18.0, D.OFF),
@@ -46,18 +46,50 @@ def test_band(mode, running, room, expected):
 @pytest.mark.parametrize(
     ("running", "room", "locked", "expected"),
     [
-        (D.OFF, 20.6, D.OFF, D.OFF),  # 0.4 K too cold: below the start threshold
-        (D.OFF, 20.4, D.OFF, D.HEAT),
+        (D.OFF, 20.6, D.OFF, D.OFF),  # 0.4 K too cold: not yet at the start point
+        (D.OFF, 20.5, D.OFF, D.HEAT),
         (D.OFF, 21.4, D.OFF, D.OFF),
-        (D.OFF, 21.6, D.OFF, D.COOL),
+        (D.OFF, 21.5, D.OFF, D.COOL),
         (D.HEAT, 21.1, D.OFF, D.HEAT),
-        (D.HEAT, 21.25, D.OFF, D.OFF),
+        (D.HEAT, 21.19, D.OFF, D.HEAT),
+        (D.HEAT, 21.2, D.OFF, D.OFF),
         (D.COOL, 20.85, D.OFF, D.COOL),
+        (D.COOL, 20.81, D.OFF, D.COOL),
         (D.COOL, 20.8, D.OFF, D.OFF),
     ],
 )
 def test_auto(running, room, locked, expected):
     assert logic.decide(M.AUTO, room, TARGET, running, locked=locked) is expected
+
+
+@pytest.mark.parametrize("band", [0.1, 0.2, 0.3, 0.5])
+@pytest.mark.parametrize("target", [16.1, 16.2, 19.5, 20.0, 20.3, 20.5, 21.0, 22.3, 23.7])
+def test_band_is_symmetric_for_sensor_steps(target, band):
+    """With a sensor in 0.1 K steps, a band of 0.2 K heats from target - 0.2 to target + 0.2.
+
+    The values are built the way they arrive (rounded sensor readings), so float noise in
+    "target - band" (16.2 - 0.1 = 16.099999999999998) must not shift a switching point by
+    one sensor step.
+    """
+    params = logic.Parameters(heat_start=band, heat_stop=band, cool_start=band, cool_stop=band)
+    below, above = round(target - band, 1), round(target + band, 1)
+    assert logic.decide(M.HEAT, below, target, D.OFF, params) is D.HEAT
+    assert logic.decide(M.HEAT, round(below + 0.1, 1), target, D.OFF, params) is D.OFF
+    assert logic.decide(M.HEAT, round(above - 0.1, 1), target, D.HEAT, params) is D.HEAT
+    assert logic.decide(M.HEAT, above, target, D.HEAT, params) is D.OFF
+    assert logic.decide(M.COOL, above, target, D.OFF, params) is D.COOL
+    assert logic.decide(M.COOL, round(above - 0.1, 1), target, D.OFF, params) is D.OFF
+    assert logic.decide(M.COOL, round(below + 0.1, 1), target, D.COOL, params) is D.COOL
+    assert logic.decide(M.COOL, below, target, D.COOL, params) is D.OFF
+
+
+def test_band_of_zero_width_stops_at_the_target():
+    params = logic.Parameters(heat_start=0.0, heat_stop=0.0, cool_start=0.0, cool_stop=0.0)
+    assert logic.decide(M.HEAT, TARGET, TARGET, D.OFF, params) is D.OFF
+    assert logic.decide(M.HEAT, TARGET, TARGET, D.HEAT, params) is D.OFF
+    assert logic.decide(M.HEAT, TARGET - 0.1, TARGET, D.OFF, params) is D.HEAT
+    assert logic.decide(M.COOL, TARGET, TARGET, D.COOL, params) is D.OFF
+    assert logic.decide(M.COOL, TARGET + 0.1, TARGET, D.OFF, params) is D.COOL
 
 
 def test_auto_only_changes_direction_through_off():

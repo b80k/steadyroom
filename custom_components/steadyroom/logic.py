@@ -81,30 +81,42 @@ def decide(
     if mode is Mode.OFF:
         return Direction.OFF
 
+    # Every threshold is a switching point: the unit switches once the room is AT it,
+    # on both sides of the target, so start and stop are symmetric. EPSILON absorbs
+    # float noise in "target - 0.2" and the like. Stop comes first, so a band of
+    # zero width stops at the target instead of starting there.
     if mode is Mode.HEAT:
-        if room < target - params.heat_start:
-            return start(Direction.HEAT)
-        if room >= target + params.heat_stop:
+        if _at_or_above(room, target + params.heat_stop):
             return Direction.OFF
+        if _at_or_below(room, target - params.heat_start):
+            return start(Direction.HEAT)
         return running if running is Direction.HEAT else Direction.OFF
 
     if mode is Mode.COOL:
-        if room > target + params.cool_start:
-            return start(Direction.COOL)
-        if room <= target - params.cool_stop:
+        if _at_or_below(room, target - params.cool_stop):
             return Direction.OFF
+        if _at_or_above(room, target + params.cool_start):
+            return start(Direction.COOL)
         return running if running is Direction.COOL else Direction.OFF
 
     # Auto: a running unit only ever stops; the other direction starts from off.
     if running is Direction.HEAT:
-        return Direction.OFF if room >= target + params.auto_stop else Direction.HEAT
+        return Direction.OFF if _at_or_above(room, target + params.auto_stop) else Direction.HEAT
     if running is Direction.COOL:
-        return Direction.OFF if room <= target - params.auto_stop else Direction.COOL
-    if room < target - params.auto_start and locked is not Direction.HEAT:
+        return Direction.OFF if _at_or_below(room, target - params.auto_stop) else Direction.COOL
+    if _at_or_below(room, target - params.auto_start) and locked is not Direction.HEAT:
         return start(Direction.HEAT)
-    if room > target + params.auto_start and locked is not Direction.COOL:
+    if _at_or_above(room, target + params.auto_start) and locked is not Direction.COOL:
         return start(Direction.COOL)
     return Direction.OFF
+
+
+def _at_or_below(value: float, limit: float) -> bool:
+    return value <= limit + EPSILON
+
+
+def _at_or_above(value: float, limit: float) -> bool:
+    return value >= limit - EPSILON
 
 
 def offset(distance: float, step: float, params: Parameters = DEFAULT_PARAMETERS) -> float:

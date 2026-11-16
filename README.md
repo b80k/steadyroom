@@ -72,11 +72,11 @@ You fill these in when adding SteadyRoom. To change them later, open the integra
 
 | Mode | Starts | Stops |
 |---|---|---|
-| Heat | room below target − 0.2 K | room at target + 0.2 K |
-| Cool | room above target + 0.2 K | room at target − 0.2 K |
-| Auto | heating below target − 0.5 K, cooling above target + 0.5 K | at target ± 0.2 K |
+| Heat | room at target − 0.2 K | room at target + 0.2 K |
+| Cool | room at target + 0.2 K | room at target − 0.2 K |
+| Auto | heating at target − 0.5 K, cooling at target + 0.5 K | at target ± 0.2 K |
 
-Between start and stop the unit keeps doing what it did (hysteresis). In **Auto**, a running unit never switches straight to the opposite direction: it switches off first, and the opposite direction stays locked for 15 minutes after a run ended. That prevents heat–cool ping-pong around the target.
+Each value is the switching point itself: with a target of 20.0 °C, heating starts at 19.8 °C and stops at 20.2 °C, so the band is the same on both sides. Between start and stop the unit keeps doing what it did (hysteresis). In **Auto**, a running unit never switches straight to the opposite direction: it switches off first, and the opposite direction stays locked for 15 minutes after a run ended. That prevents heat–cool ping-pong around the target.
 
 The chart shows, for each mode, where the unit starts and stops and what offset it receives on the way. Every threshold carries the name of the setting that moves it.
 
