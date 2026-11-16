@@ -10,15 +10,15 @@
 **Your heat pump switches on, off, on, off, and the sofa never gets warm? SteadyRoom fixes that.** It cuts the short cycling of air conditioners whose built-in sensor sits in the wrong place down to fewer, real runs, and turns them into a calm, precise room thermostat.
 
 - 🎯 **Measures where you live**: decides from a sensor in the middle of the room, not from the unit's housing.
-- 🌊 **Fewer, real runs**: the unit runs until the room is in the band and is then really off, instead of flicking between idle and running every few minutes.
+- 🌊 **Fewer, real runs**: the unit runs until the room is just past the target and is then really off, instead of flicking between idle and running every few minutes.
 - 🧩 **One entity, no automation spaghetti**: works with the standard Thermostat and Tile cards, all settings on the device page.
 - 🛡️ **Safe to try**: every new device starts as a test run and touches nothing until you switch on *Control the unit*.
 
 ## The problem
 
-![A wall unit reads 25.4 °C in its own warm air while the middle of the room is still at 20.4 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/problem.png)
+![A wall unit reads 25.0 °C in its own warm air while the middle of the room is still at 20.4 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/problem.png)
 
-Most split units measure the temperature at their own housing, high up on the wall, right in the warm air they blow out. When heating, they believe the room has reached the target long before its centre has, throttle down, switch off, start again a few minutes later. The room swings, the compressor cycles, and nobody is comfortable.
+Most split units measure the temperature at their own air intake, high up on the wall, where the warm air they blow out collects. When heating, they believe the room has reached the target long before its centre has, throttle down, switch off, start again a few minutes later. The room swings, the compressor cycles, and nobody is comfortable.
 
 ## The fix
 
@@ -26,33 +26,48 @@ Most split units measure the temperature at their own housing, high up on the wa
 
 SteadyRoom puts a virtual thermostat on top of your unit. It decides heat, cool or off from a sensor in the middle of the room, and it gives the unit a setpoint relative to the unit's *own* reading. The unit therefore sees a clear demand and keeps running until the room itself is where you want it. Then it really switches off and stays off until the room needs it again.
 
+Your unit's display, its remote and the vendor's app show the setpoint SteadyRoom sends, not your target: 26 °C while you want 21 °C, for example. That is intended. Your target is the one on the SteadyRoom thermostat.
+
 ![Schematic over six hours: on its own the unit runs ever shorter and the room stays below target; with SteadyRoom it reaches the target sooner and then makes a few long runs with growing off-times](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/before-after.png)
 
 *Schematic illustration of the effect, not a measurement.*
 
 ## What you get
 
-One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Fan speed, vane position (up and down, left and right) and your unit's own presets, such as *quiet* or *powerful*, pass through to your unit, and SteadyRoom can switch to one of them near the target ([Preset near the target](#preset-near-the-target)). SteadyRoom offers exactly what your unit reports, nothing more. Extras your integration adds as separate entities, such as an air purifier switch, stay on the unit's own device. All tuning values live as settings on the device page.
+One climate entity per room. Put it on the standard **Thermostat card** or a **Tile card** and you have everything in one place: room temperature, target, mode (Off, Heat, Cool, Auto) and what the unit is doing. Home Assistant labels the Auto mode *Heat/Cool*. Fan speed, vane position (up and down, left and right) and your unit's own presets, such as *quiet* or *powerful*, pass through to your unit, and SteadyRoom can switch to one of them near the target ([Preset near the target](#preset-near-the-target)). SteadyRoom offers exactly what your unit reports, nothing more. Extras your integration adds as separate entities, such as an air purifier switch, stay on the unit's own device. All tuning values live as settings on the device page.
 
-| Thermostat card | Device page |
+| Thermostat and Tile cards | Device page |
 |---|---|
-| ![SteadyRoom on the standard Thermostat card: heating, target 21.0 °C, room 20.4 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/thermostat-card.png) | ![SteadyRoom device page with its settings](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/device-settings.png) |
+| ![SteadyRoom on the standard Thermostat card, heating to 21.0 °C with the room at 20.4 °C, and on Tile cards next to the room centre at 20.4 °C and the wall unit at 25 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/cards.png) | ![SteadyRoom device page with its settings](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/device-settings.png) |
 
-The difference in one glance: the room centre reads 20.4 °C while the wall unit believes it is already at 25 °C.
-
-![Tile cards: SteadyRoom heating to 21.0 °C, room centre 20.4 °C, wall unit 25 °C](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/tiles.png)
+The tiles show the difference in one glance: the room centre reads 20.4 °C while the wall unit believes it is already at 25 °C.
 
 It replaces what usually takes an automation and a handful of helpers: a target helper, a mode selector, an on/off switch for the schedule and four time helpers.
 
 ## Get started
 
-Requires Home Assistant 2026.10 or newer.
+### What you need
 
-1. In Home Assistant open the **Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`.
-2. Install **SteadyRoom** and restart Home Assistant.
+- Home Assistant 2026.10 or newer, set to Celsius. SteadyRoom's limits and defaults are Celsius values; Fahrenheit installations are not supported yet.
+- Your unit as a climate entity that reports its own current temperature and accepts heat, cool, off and a target temperature.
+- A temperature sensor in the room: a sensor entity with the device class *temperature*. The setup form only offers those.
+- Optional: door and window contacts (binary sensors) and a *Schedule* helper.
+
+SteadyRoom is in daily use with two Panasonic units connected through the Panasonic Comfort Cloud integration. Other brands should work if their climate entity meets the points above. The interface is available in English and German.
+
+### Install
+
+1. In Home Assistant open **Settings → Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`. Adding a link needs a GitHub connection: Home Assistant shows a code that you confirm with your GitHub account.
+2. Install **SteadyRoom** and restart Home Assistant. Before the first installation the Marketplace asks you to accept its notice about community projects.
 3. **Settings → Devices & services → Add integration → SteadyRoom**.
 4. Fill in the setup fields below: the air conditioner and the room temperature sensor are required, the rest is optional.
-5. A new device starts as a test run: **Control the unit** is off and no mode is chosen, so it touches nothing on your unit yet. Pick a mode on the thermostat card, compare `would_hvac_mode` and `would_setpoint` with what your unit does, then switch **Control the unit** on (device page, *Configuration*) to let SteadyRoom take over.
+5. A new device starts as a test run: **Control the unit** is off and no mode is chosen, so it touches nothing on your unit yet. Open the new thermostat, for example from its device page under *Controls*, and pick a mode. Then choose **⋮ → Details** in the same dialog: under *Attributes*, **Mode SteadyRoom wants** and **Setpoint SteadyRoom wants** show what SteadyRoom would send. Compare that with what your unit does, then switch **Control the unit** on (device page, *Configuration*) to let SteadyRoom take over.
+
+The Marketplace is built into Home Assistant from 2026.11. On 2026.10, add the same link in HACS under **Custom repositories** with the type *Integration*.
+
+Without Marketplace or HACS: download the source code of the [latest release](https://github.com/b80k/steadyroom/releases/latest), copy the folder `custom_components/steadyroom` into the `custom_components` folder of your Home Assistant configuration and restart.
+
+To update, install the new version the Marketplace offers, or copy the folder again, and restart. To remove SteadyRoom, delete its entries under **Settings → Devices & services**, then uninstall it. SteadyRoom sends nothing when it is removed: the unit keeps the mode and setpoint it had last.
 
 ### Setup fields
 
@@ -64,7 +79,7 @@ You fill these in when adding SteadyRoom. To change them later, open the integra
 | **Air conditioner** (required) | The climate entity of your split unit or heat pump, as provided by its own integration. It must report its current temperature. | SteadyRoom sends mode and setpoint to this entity and reads the unit's own temperature from it. |
 | **Room temperature sensor** (required) | A temperature sensor in the middle of the room, at sitting height, away from the unit's airflow, sun and radiators. | Every decision is made from this value. |
 | **Fallback temperature sensor** | Optional: a second temperature sensor in the same room. | Used while the room sensor is unavailable. Without either sensor, SteadyRoom does not start the unit. |
-| **Door and window contacts** | Optional: the binary sensors of the doors and windows of this room, including open doorways to rooms the unit also serves. | While one stays open longer than **Door · open delay**, the unit switches off. |
+| **Door and window contacts** | Optional: the binary sensors of the doors and windows of this room. If the unit also serves an adjoining room through an open doorway, add that room's doors and windows too. | While one stays open longer than **Door · open delay**, the unit switches off. |
 | **Contacts report closed as on** | Turn on only if your contacts are `on` when closed, as with many Loxone or KNX inputs. Standard door sensors are `on` when open: leave it off. | Flips how the contacts are read. |
 | **Schedule** | Optional: a Home Assistant *Schedule* helper with the times the room should be conditioned. | Outside its blocks the unit stays off. Leave empty to control around the clock. |
 
@@ -76,7 +91,7 @@ You fill these in when adding SteadyRoom. To change them later, open the integra
 | Auto | heating at room ≤ target − 0.5 K, cooling at room ≥ target + 0.5 K | heating at room ≥ target + 0.2 K, cooling at room ≤ target − 0.2 K |
 | Heat | room ≤ target − 0.2 K | room ≥ target + 0.2 K |
 
-Each value is the switching point itself: with a target of 20.0 °C, heating starts at 19.8 °C and stops at 20.2 °C, so the band is the same on both sides. Between start and stop the unit keeps doing what it did (hysteresis). In **Auto**, a running unit never switches straight to the opposite direction: it switches off first, and the opposite direction stays locked for 15 minutes after a run ended. That prevents heat–cool ping-pong around the target.
+Each value is the switching point itself: with a target of 20.0 °C, heating starts at 19.8 °C and stops at 20.2 °C, so the band is the same on both sides. Between start and stop the unit keeps doing what it did (hysteresis). In **Auto**, the mode Home Assistant labels *Heat/Cool*, a running unit never switches straight to the opposite direction: it switches off first, and the opposite direction stays locked for 15 minutes after a run ended. That prevents heat–cool ping-pong around the target.
 
 The chart shows Cool, Auto and Heat side by side. The room temperature runs up the left axis, so cooling comes down to the target from above and heating comes up from below. Each dashed line is a switching point, coloured by the direction it belongs to and labelled with its condition; the curve shows the offset the unit receives on the way.
 
@@ -112,19 +127,25 @@ The offset itself has no cap; only the final setpoint is limited (16–30 °C by
 - **Contacts**: if any contact stays open for 60 s, the unit switches off. While a contact is open, a stopped unit does not start. Once all contacts have been closed for 15 s, the unit resumes the direction it had before. If your contacts report *closed* as `on`, tick the inversion option. A contact that is `unavailable` or `unknown` counts as closed, so a sensor with a flat battery does not keep your unit off.
 - **Schedule**: pick a Home Assistant *Schedule* helper. Outside its blocks the unit stays off. Without a schedule SteadyRoom is always active. If the schedule becomes `unavailable`, `unknown` or disappears, SteadyRoom keeps its last answer (inside, if it never had one) instead of switching the unit off.
 
+## Remote control and vendor app
+
+While **Control the unit** is on, mode and setpoint belong to SteadyRoom. What the remote, the vendor's app or another automation changes there, SteadyRoom puts back as soon as the unit reports it: a changed setpoint is replaced, and a unit put into *dry* or *fan only* is switched back to off, heating or cooling, whichever SteadyRoom wants at that moment. Only switching on or off by hand inside the band stays until the next switching point: a unit started in a direction the chosen mode allows runs until its stop point, a unit stopped rests until its start point.
+
+To use *dry* or *fan only*, or to run the unit by hand, switch **Control the unit** off. Fan speed and vane position stay as you set them; so does the preset, unless you chose one under [Preset near the target](#preset-near-the-target).
+
 ## Robust by design
 
-- If the room sensor is unavailable, SteadyRoom uses the fallback sensor; without either it will not start heating or cooling and says so. Switching off (mode Off, open door, end of schedule) always goes out, sensor or not. With **Sensor · maximum age** set, a sensor that has not reported for that long counts as unavailable too.
+- If the room sensor is unavailable, SteadyRoom uses the fallback sensor; without either it will not start heating or cooling and says so. A unit that is already running then keeps its last setpoint and regulates on its own reading until a sensor is back. Switching off (mode Off, open door, end of schedule) always goes out, sensor or not. With **Sensor · maximum age** set, a sensor that has not reported for that long counts as unavailable too.
 - When the unit comes back after a connection loss, SteadyRoom sends nothing for 30 s, then re-sends mode and setpoint. Cloud-connected units otherwise keep running on a command they missed. A return from unavailable never counts as the end of a run, so it does not start the Auto lock.
 - A command the unit rejects is tried again after 30 s. `sent_setpoint` only shows setpoints the unit accepted.
 - Nothing is sent before Home Assistant has finished starting.
-- In mode **Off** SteadyRoom keeps the unit off (with **Control the unit** on, like everything SteadyRoom sends). That includes *dry* or *fan only* started from the remote or another app: SteadyRoom switches it off again.
+- If Home Assistant itself stops, the unit likewise keeps the last mode and setpoint it received and regulates on its own reading, like a unit without SteadyRoom. **Unit · lowest setpoint** and **Unit · highest setpoint** limit that setpoint.
 - Mode, target, last direction and the lock survive restarts.
 - It only ever sends commands to the unit you selected. If you rename the unit, a sensor, a contact or the schedule, SteadyRoom follows the new entity id. If the unit's entity is removed, SteadyRoom stops sending and never commands another entity that later takes over the old id; select the unit again under **Configure**.
 
 ## Settings
 
-All tuning values are number entities on the SteadyRoom device page and take effect immediately, apart from **Preset · near target**, which is a selection. Each name starts with its group, so the page lists them group by group. The **Control the unit** switch sits among them; it is explained under [Test run](#test-run-control-the-unit). The defaults work for most split units; change one value at a time and watch a day before the next.
+All tuning values are number entities on the SteadyRoom device page; **Preset · near target** is a selection. Changes take effect immediately. Each name starts with its group, so the page lists them group by group. The **Control the unit** switch sits among them; it is explained under [Test run](#test-run-control-the-unit). The defaults come from two Panasonic units and are a starting point; change one value at a time and watch a day before the next.
 
 ⚙️ marks fine tuning. These start disabled, so the device page folds them into **+5 disabled entities** and keeps the list short. While disabled they keep their default. To change one, open it there and enable it; Home Assistant reloads SteadyRoom after about 30 seconds.
 
@@ -168,12 +189,12 @@ These only matter if you selected contacts during setup.
 
 ### Preset near the target
 
-Only offered when your unit has presets, such as *quiet* on many Panasonic units. A quiet preset keeps a run gentle once the room is almost there, while a start from far away still gets full power.
+Only useful when your unit has presets, such as *quiet* on many Panasonic units; without presets the selection only offers *Off*. A quiet preset keeps a run gentle once the room is almost there, while a start from far away still gets full power.
 
 | Setting | Enter | Default | What it does |
 |---|---|---|---|
 | **Preset · near target** | Off or one of your unit's presets | Off | Off leaves the preset to you. With a preset chosen, SteadyRoom sends it as soon as the room is within **Preset · distance** of the target, at the start of a run or during it, and keeps it until the run ends. A run that starts further away runs with *none*, if your unit offers it. |
-| **Preset · distance** | 0–5 K | 0.3 K | How close to the target the room must be for the near-target preset. Starts after the room has just left the band are this close, so they run with the preset. |
+| **Preset · distance** | 0–5 K | 0.3 K | How close to the target the room must be for the near-target preset. In Heat and Cool, a start after the room has just left the band is this close (0.2 K by default) and runs with the preset from the beginning. An Auto start is 0.5 K away: it begins without the preset and switches to it at this distance. |
 
 The pink band in [the offset chart](#the-setpoint-sent-to-the-unit) shows where the preset applies. While a preset is chosen here, SteadyRoom sets the unit's preset at the start of every run. If you change the preset by hand during a run, SteadyRoom leaves your choice until that run ends.
 
@@ -189,7 +210,7 @@ To change the unit, sensors, contacts or schedule later, use **Configure** on th
 
 ### Test run: Control the unit
 
-Every new device starts with the **Control the unit** switch off; switch it on to let SteadyRoom take over. While it is off, SteadyRoom decides as usual but sends nothing to the unit; the attributes `would_hvac_mode` and `would_setpoint` show what it would do, so you can compare it with an existing automation for a few days. The Auto lock follows what the real unit does. Switching it on makes SteadyRoom take over and send mode and setpoint at once. The switch position is stored with the device's configuration and survives a crash.
+Every new device starts with the **Control the unit** switch off; switch it on to let SteadyRoom take over. While it is off, SteadyRoom decides as usual but sends nothing to the unit; the attributes **Mode SteadyRoom wants** and **Setpoint SteadyRoom wants** show what it would do (see [Diagnostics](#diagnostics)), so you can compare it with an existing automation for a few days. The Auto lock follows what the real unit does. Switching it on makes SteadyRoom take over and send mode and setpoint at once. The switch position is stored with the device's configuration and survives a crash.
 
 Fan speed, vane position and presets still pass through to the unit during a test run: they are your own commands, not SteadyRoom's decisions.
 
@@ -199,8 +220,35 @@ Updating from 0.1.2 or earlier replaces the former *Observe only* switch with **
 
 ## Diagnostics
 
-The climate entity carries attributes that explain every decision: `reason` (`not_configured`, `off_mode`, `in_band`, `heating`, `cooling`, `door_open`, `outside_schedule`, `locked`, `sensor_missing`, `unit_unavailable`), `distance`, `offset`, `sent_setpoint`, `last_direction`, `run_ended_at`, `locked_direction`, `lock_until`, `would_hvac_mode`, `would_setpoint`, `controls_unit`.
+The thermostat explains every decision in its attributes. Open it and choose **⋮ → Details** to see them; templates and automations use the names in the second column.
+
+| Attribute | In templates | What it tells you |
+|---|---|---|
+| Reason | `reason` | Why the unit runs or rests, see the next table. |
+| Distance to target | `distance` | Target minus room temperature in K: positive while the room is too cold. |
+| Offset | `offset` | The offset in use, negative when cooling. |
+| Setpoint sent to the unit | `sent_setpoint` | The setpoint the unit last accepted in the current run. |
+| Mode SteadyRoom wants, Setpoint SteadyRoom wants | `would_hvac_mode`, `would_setpoint` | The decision itself. During a test run it only shows here. |
+| Controls the unit | `controls_unit` | The position of the **Control the unit** switch. |
+| Last direction, Last run ended | `last_direction`, `run_ended_at` | The unit's last heating or cooling run. |
+| Locked direction, Locked until | `locked_direction`, `lock_until` | The Auto lock. |
+
+| Reason | In templates | Meaning |
+|---|---|---|
+| Not configured: choose a mode | `not_configured` | No mode has been chosen yet. SteadyRoom sends nothing. |
+| Mode is off | `off_mode` | Mode **Off**: the unit is kept off. |
+| Room within band | `in_band` | No need to run: the room is within the band or already past the target. |
+| Heating, Cooling | `heating`, `cooling` | SteadyRoom wants the unit to heat or cool. |
+| Door or window open | `door_open` | A contact has been open longer than **Door · open delay**, or the contacts have not been closed long enough for a start. |
+| Outside schedule | `outside_schedule` | Outside the schedule's blocks: the unit is kept off. |
+| Opposite direction locked | `locked` | Auto would start the other direction, but the lock after the last run still holds. |
+| Room temperature missing | `sensor_missing` | Neither the room sensor nor the fallback sensor delivers a value. |
+| Air conditioner unavailable | `unit_unavailable` | The unit is unavailable or was removed, or it does not report its own temperature. |
 
 ## Not included
 
 SteadyRoom does not compute the room temperature from several sensors, does not drive radiator valves or relays, and has no presence detection or presets of its own: the presets you see are your unit's. A unit preset that changes the unit's own setpoint, such as *eco* or *away* on some units, is overridden by the next setpoint SteadyRoom sends; choose such a preset for **Preset · near target** only if your unit keeps the setpoint SteadyRoom sends. Use any temperature sensor you trust as input.
+
+## Feedback
+
+Bugs, questions and reports from other brands are welcome in the [issues](https://github.com/b80k/steadyroom/issues).
