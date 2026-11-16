@@ -37,9 +37,9 @@ class Parameters:
     All temperature values are in kelvin relative to the target.
     """
 
-    heat_start: float = 0.2  # Heat: start below target - heat_start
+    heat_start: float = 0.2  # Heat: start at target - heat_start
     heat_stop: float = 0.2  # Heat: stop at target + heat_stop
-    cool_start: float = 0.2  # Cool: start above target + cool_start
+    cool_start: float = 0.2  # Cool: start at target + cool_start
     cool_stop: float = 0.2  # Cool: stop at target - cool_stop
     auto_start: float = 0.5  # Auto: start at target -/+ auto_start
     auto_stop: float = 0.2  # Auto: stop at target +/- auto_stop
@@ -122,10 +122,10 @@ def _at_or_above(value: float, limit: float) -> bool:
 def offset(distance: float, step: float, params: Parameters = DEFAULT_PARAMETERS) -> float:
     """Offset in kelvin for a distance to the target (positive = behind it).
 
-    Up to the knee the offset is the minimum; above it the effective distance
-    grows quadratically. The result is a whole number of steps and never less
-    than ``min_offset``. There is deliberately no upper limit here; only the
-    final setpoint is clamped.
+    Up to the knee the offset follows the distance; above it the effective
+    distance grows quadratically. The result is rounded up to a whole number
+    of steps and is never less than ``min_offset``. There is deliberately no
+    upper limit here; only the final setpoint is clamped.
     """
     if distance <= params.knee:
         grown = distance
