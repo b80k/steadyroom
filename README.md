@@ -84,10 +84,17 @@ The chart shows, for each mode, where the unit starts and stops and what offset 
 
 ## The setpoint sent to the unit
 
-The setpoint is the unit's own measured temperature plus an offset (minus, when cooling). The offset depends on how far the room is from the target:
+The setpoint is the unit's own measured temperature plus an offset (minus, when cooling). The offset depends on how far the room is from the target, d, and on three settings:
 
-- up to 0.5 K away: 0.5 K,
-- beyond that it grows quadratically: g = d + 0.5 · (d − 0.5)², rounded up to the unit's step (usually 0.5 K).
+- up to **Offset · knee** (0.5 K), the offset is d itself,
+- beyond the knee it grows quadratically: d + **Offset · growth factor** · (d − knee)², with 0.5 · (d − 0.5)² by default,
+- the result is rounded up to the unit's step (usually 0.5 K) and never falls below **Offset · minimum** (0.5 K).
+
+![The offset over the distance to the target, with Offset · minimum, Offset · knee and Preset · distance marked, and a second panel comparing growth factors 0, 0.5 and 1](https://raw.githubusercontent.com/b80k/steadyroom/main/docs/images/offset-curve.png)
+
+The upper panel shows the default curve. Near the target the offset sits on the minimum, and with **Offset · minimum** 0 it drops to 0 once the room reaches the target, so the unit is only asked to hold its own reading until the run stops. The shaded part is where **Preset · near target** applies. The lower panel shows what **Offset · growth factor** does far from the target.
+
+With the defaults this gives:
 
 | Room behind target by | Offset |
 |---|---|
@@ -155,7 +162,7 @@ These only matter if you selected contacts during setup.
 
 | Setting | Enter | Default | What it does |
 |---|---|---|---|
-| **Offset · minimum** | 0–10 K | 0.5 K | The smallest offset added to the unit's own reading while it runs. If the unit still throttles down or switches itself off just before the room reaches the target, raise it; if the room overshoots, lower it. |
+| **Offset · minimum** | 0–10 K | 0.5 K | See [the chart](#the-setpoint-sent-to-the-unit). The smallest offset added to the unit's own reading while it runs. If the unit still throttles down or switches itself off just before the room reaches the target, raise it; if the room overshoots, lower it. |
 | **Offset · knee** ⚙️ | 0–10 K | 0.5 K | Up to this distance from the target, the offset equals the distance, rounded up to the unit's step and never below the minimum. Beyond it, the offset grows faster than the distance. |
 | **Offset · growth factor** ⚙️ | 0–10 | 0.5 | How much faster it grows beyond the knee: offset = d + factor · (d − knee)². Raise it to catch up faster from far behind, for example after a cold night; 0 makes the offset follow the distance. |
 
@@ -168,7 +175,7 @@ Only offered when your unit has presets, such as *quiet* on many Panasonic units
 | **Preset · near target** | Off or one of your unit's presets | Off | Off leaves the preset to you. With a preset chosen, SteadyRoom sends it as soon as the room is within **Preset · distance** of the target, at the start of a run or during it, and keeps it until the run ends. A run that starts further away runs with *none*, if your unit offers it. |
 | **Preset · distance** | 0–5 K | 0.3 K | How close to the target the room must be for the near-target preset. Starts after the room has just left the band are this close, so they run with the preset. |
 
-While a preset is chosen here, SteadyRoom sets the unit's preset at the start of every run. If you change the preset by hand during a run, SteadyRoom leaves your choice until that run ends.
+The shaded part of [the offset chart](#the-setpoint-sent-to-the-unit) shows where the preset applies. While a preset is chosen here, SteadyRoom sets the unit's preset at the start of every run. If you change the preset by hand during a run, SteadyRoom leaves your choice until that run ends.
 
 ### Unit and sensor
 
