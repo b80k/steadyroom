@@ -6,6 +6,7 @@
 [![Home Assistant 2026.10+](https://img.shields.io/badge/Home%20Assistant-2026.10%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
 [![Validate](https://github.com/b80k/steadyroom/actions/workflows/validate.yml/badge.svg)](https://github.com/b80k/steadyroom/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3B82F6)](LICENSE)
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-0070BA?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/klusekemper)
 
 **Your heat pump switches on, off, on, off, and the sofa never gets warm? SteadyRoom fixes that.** It cuts the short cycling of air conditioners whose built-in sensor sits in the wrong place down to fewer, real runs, and turns them into a calm, precise room thermostat.
 
@@ -57,15 +58,18 @@ SteadyRoom is in daily use with two Panasonic units connected through the Panaso
 
 ### Install
 
-1. In Home Assistant open **Settings → Marketplace**, choose **Add from link** and enter `https://github.com/b80k/steadyroom`. Adding a link needs a GitHub connection: Home Assistant shows a code that you confirm with your GitHub account.
-2. Install **SteadyRoom** and restart Home Assistant. Before the first installation the Marketplace asks you to accept its notice about community projects.
-3. **Settings → Devices & services → Add integration → SteadyRoom**.
-4. Fill in the setup fields below: the air conditioner and the room temperature sensor are required, the rest is optional.
-5. A new device starts as a test run: **Control the unit** is off and no mode is chosen, so it touches nothing on your unit yet. Open the new thermostat, for example from its device page under *Controls*, and pick a mode. Then choose **⋮ → Details** in the same dialog: under *Attributes*, **Mode SteadyRoom wants** and **Setpoint SteadyRoom wants** show what SteadyRoom would send. Compare that with what your unit does, then switch **Control the unit** on (device page, *Configuration*) to let SteadyRoom take over.
+[![Open SteadyRoom in the Marketplace of your Home Assistant](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=b80k&repository=steadyroom&category=integration)
 
-The Marketplace is built into Home Assistant from 2026.11. On 2026.10, add the same link in HACS under **Custom repositories** with the type *Integration*.
+1. In Home Assistant open **Settings → Marketplace** and search for **SteadyRoom**, or use the button above. The first time you open the Marketplace, it asks you to accept its notice about community projects.
+2. Open **SteadyRoom**, choose **Install** and confirm. Home Assistant installs it and opens the setup form right away.
+3. Fill in the setup fields below: the air conditioner and the room temperature sensor are required, the rest is optional.
+4. A new device starts as a test run: **Control the unit** is off and no mode is chosen, so it touches nothing on your unit yet. Open the new thermostat, for example from its device page under *Controls*, and pick a mode. Then choose **⋮ → Details** in the same dialog: under *Attributes*, **Mode SteadyRoom wants** and **Setpoint SteadyRoom wants** show what SteadyRoom would send. Compare that with what your unit does, then switch **Control the unit** on (device page, *Configuration*) to let SteadyRoom take over.
 
-Without Marketplace or HACS: download the source code of the [latest release](https://github.com/b80k/steadyroom/releases/latest), copy the folder `custom_components/steadyroom` into the `custom_components` folder of your Home Assistant configuration and restart.
+The Marketplace is built into Home Assistant from 2026.11. On 2026.10, find SteadyRoom in HACS and download it there.
+
+Without Marketplace or HACS: download the source code of the [latest release](https://github.com/b80k/steadyroom/releases/latest), then copy the folder `custom_components/steadyroom` into the `custom_components` folder of your Home Assistant configuration.
+
+After either of these, restart Home Assistant and add SteadyRoom under **Settings → Devices & services → Add integration → SteadyRoom**. Use the same path to add another room later.
 
 To update, install the new version the Marketplace offers, or copy the folder again, and restart. To remove SteadyRoom, delete its entries under **Settings → Devices & services**, then uninstall it. SteadyRoom sends nothing when it is removed: the unit keeps the mode and setpoint it had last.
 
@@ -252,3 +256,9 @@ SteadyRoom does not compute the room temperature from several sensors, does not 
 ## Feedback
 
 Bugs, questions and reports from other brands are welcome in the [issues](https://github.com/b80k/steadyroom/issues).
+
+## Say thanks
+
+SteadyRoom is a hobby project and open source: everyone can use it for free. If you like it and want to support my work, you are welcome to [buy me a coffee](https://www.paypal.com/paypalme/klusekemper). It is entirely voluntary.
+
+[![Buy me a coffee via PayPal](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-0070BA?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/klusekemper)
