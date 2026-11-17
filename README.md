@@ -13,6 +13,7 @@
 - 🎯 **Measures where you live**: decides from a sensor in the middle of the room, not from the unit's housing.
 - 🌊 **Fewer, real runs**: the unit runs until the room is just past the target and is then really off, instead of flicking between idle and running every few minutes.
 - 🧩 **One entity, no automation spaghetti**: works with the standard Thermostat and Tile cards, all settings on the device page.
+- 🪶 **Lean by design**: it does this one job. You pick your unit and a room sensor, every other setting has a default.
 - 🛡️ **Safe to try**: every new device starts as a test run and touches nothing until you switch on *Control the unit*.
 
 ## The problem
